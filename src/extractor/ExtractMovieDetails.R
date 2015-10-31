@@ -40,4 +40,100 @@
 #     - MovieNumUserRatings
 #     - ReleaseDateUS
 
-extractMovieDetails <- function(inFile){}
+library(rvest)
+library(magrittr)
+library(stringr)
+
+
+extractMovieDetails <- function(inFile){
+  #change to actual file "inFile" once all modules completed
+  mainPageData <- read.csv("../../data/dummy-mainPageData.csv",stringsAsFactors = FALSE)
+  urls <-  mainPageData$MovieURL
+  x <- sapply(urls,extractSingleMovieDetail)
+  x <- t(x)
+  colnames(x) <- c("DurationMins","Genre1","Genre2","Genre3","NumIMDBUserReviews","NumIMDBCriticReviews","DirectorName","DirectorID","DirectorURL","Star1Name","Star1ID","Star1URL","Star2Name","Star2ID","Star2URL","Star3Name","Star3ID","Star3URL")
+  finalDF <- cbind(mainPageData,x)
+  write.csv(finalDF,file = "../../data/movieDetails.csv",row.names = FALSE)
+}
+
+extractSingleMovieDetail <- function(url){
+  source.page <- read_html(url)
+  
+  #duration
+  duration_mins <- source.page %>% 
+    html_nodes("#overview-top time") %>%  
+    html_text() %>%
+    str_replace_all("[^0-9]","")
+  
+  #genres
+  genres <- source.page %>% 
+    html_nodes(".infobar .itemprop") %>%  
+    html_text()
+  genre1 <- genres[1]
+  genre2 <- ifelse(is.na(genres[2]),"",genres[2])
+  genre3 <- ifelse(is.na(genres[3]),"",genres[3])
+
+  #NumImdbUserReviews
+  numImdbUserReviews <- source.page %>% 
+    html_nodes(".star-box-details a:nth-child(3) span") %>%  
+    html_text() %>% 
+    str_replace_all(",","")
+  
+  #NumImdbCriticReviews
+  numImdbCriticReviews <- source.page %>% 
+    html_nodes(".star-box-details a:nth-child(8) span") %>%  
+    html_text() %>% 
+    str_replace_all("[^0-9]","")
+  
+  #DirectorName
+  directorName <- source.page %>% 
+    html_nodes("#overview-top :nth-child(8) .itemprop") %>%  
+    html_text()
+  
+  #DirectorURL and DirectorID
+  directorURL <- source.page %>% 
+    html_nodes("#overview-top :nth-child(8) a") %>%  
+    html_attr("href") %>%
+    str_replace_all("\\?.*","")
+  directorURL <- directorURL[2]
+  directorURL <- paste0("www.imdb.com",directorURL)
+  directorID <- str_replace_all(directorURL,'www.imdb.com/name/|/$',"")
+  
+  #Stars
+  stars <- source.page %>% 
+    html_nodes("#overview-top :nth-child(10) .itemprop") %>%  
+    html_text()
+  starsURLs <- source.page %>% 
+    html_nodes("#overview-top :nth-child(10) a") %>%  
+    html_attr("href") %>%
+    str_replace_all("\\?.*","")
+  starsURLs <- starsURLs[1:3]
+  starsURLs <- paste0("www.imdb.com",starsURLs)
+  starsIds <- str_replace_all(starsURLs,'www.imdb.com/name/|/$',"")
+  star1Name <-  stars[1]
+  star1Id <-  starsIds[1]
+  star1URL <-  starsURLs[1]
+  star2Name <-  ifelse(is.na(stars[2]),"",stars[2])
+  star2Id <-  ifelse(is.na(starsIds[2]),"",starsIds[2])
+  star2URL <-  ifelse(is.na(starsURLs[2]),"",starsURLs[2])
+  star3Name <-  ifelse(is.na(stars[3]),"",stars[3])
+  star3Id <-  ifelse(is.na(starsIds[3]),"",starsIds[3])
+  star3URL <-  ifelse(is.na(starsURLs[3]),"",starsURLs[3])
+  
+  #Below have ambiguity issues. Need to discuss
+  #Box Office Budget
+  #budget <- source.page %>% 
+  #  html_nodes("#titleDetails :nth-child(11)") %>%  
+  #  html_text() %>%
+  #  str_replace_all("[^0-9]","")
+  
+  #Opening Weekend
+  
+  #Gross
+  
+  returnVector <- c(duration_mins,genre1,genre2,genre3,numImdbUserReviews,numImdbCriticReviews,directorName,directorID,directorURL,star1Name,star1Id,star1URL,star2Name,star2Id,star2URL,star3Name,star3Id,star3URL)  
+  return(returnVector)
+}
+
+#TODO: TEST CODE: Remove late
+extractMovieDetails(NULL)
