@@ -1,4 +1,19 @@
-"MovieURL","DurationMins","Genre1","Genre2","Genre3","NumIMDBUserReviews","NumIMDBCriticReviews","DirectorName","DirectorID","DirectorURL","Star1Name","Star1ID","Star1URL","Star2Name","Star2ID","Star2URL","Star3Name","Star3ID","Star3URL"
-"http://www.imdb.com/title/tt0120737/","178","Adventure","Fantasy","","1135268","294","Peter Jackson","nm0001392","www.imdb.com/name/nm0001392/","Elijah Wood","nm0000704","www.imdb.com/name/nm0000704/","Ian McKellen","nm0005212","www.imdb.com/name/nm0005212/","Orlando Bloom","nm0089217","www.imdb.com/name/nm0089217/"
-"http://www.imdb.com/title/tt0108052/","195","Biography","Drama","History","788627","169","Steven Spielberg","www.imdb.comNA","www.imdb.comNA","Liam Neeson","nm0000553","www.imdb.com/name/nm0000553/","Ralph Fiennes","nm0000146","www.imdb.com/name/nm0000146/","Ben Kingsley","nm0001426","www.imdb.com/name/nm0001426/"
-"http://www.imdb.com/title/tt1454468/","91","Sci-Fi","Thriller","","533180","720","Alfonso Cuarón","nm0190859","www.imdb.com/name/nm0190859/","Sandra Bullock","nm0000113","www.imdb.com/name/nm0000113/","George Clooney","nm0000123","www.imdb.com/name/nm0000123/","Ed Harris","nm0000438","www.imdb.com/name/nm0000438/"
+"MovieURL","DurationMins","Genre1","Genre2","Genre3","NumIMDBUserReviews","NumIMDBCriticReviews","DirectorName","DirectorID","DirectorURL","Star1Name","Star1ID","Star1URL","Star2Name","Star2ID","Star2URL","Star3Name","Star3ID","Star3URL","BoxOfficeBudget","BoxOfficeBudgetCurr","BoxOfficeOpeningWeekend","BoxOfficeOpeningWeekendCurr","BoxOfficeGross","BoxOfficeGrossCurr"
+"http://www.imdb.com/title/tt0120737/","178","Adventure","Fantasy","","1136649","294","Peter Jackson","nm0001392","www.imdb.com/name/nm0001392/","Elijah Wood","nm0000704","www.imdb.com/name/nm0000704/","Ian McKellen","nm0005212","www.imdb.com/name/nm0005212/","Orlando Bloom","nm0089217","www.imdb.com/name/nm0089217/","93000000","USD","
+    Opening Weekend:         £11,058,045        
+
+      (UK)
+      (21 December 2001)
+    ","NA","36116967","USD"
+"http://www.imdb.com/title/tt0108052/","195","Biography","Drama","History","789588","169","Steven Spielberg","www.imdb.comNA","www.imdb.comNA","Liam Neeson","nm0000553","www.imdb.com/name/nm0000553/","Ralph Fiennes","nm0000146","www.imdb.com/name/nm0000146/","Ben Kingsley","nm0001426","www.imdb.com/name/nm0001426/","22000000","USD","
+    Opening Weekend:         £1,234,591        
+
+      (UK)
+      (4 March 1994)
+    ","NA","
+    Gross:        £16,439,233        
+
+      (UK)
+      (17 June 1994)
+    ","NA"
+"http://www.imdb.com/title/tt1454468/","91","Sci-Fi","Thriller","","533915","721","Alfonso Cuarón","nm0190859","www.imdb.com/name/nm0190859/","Sandra Bullock","nm0000113","www.imdb.com/name/nm0000113/","George Clooney","nm0000123","www.imdb.com/name/nm0000123/","Ed Harris","nm0000438","www.imdb.com/name/nm0000438/","100000000","USD","55785112","USD","274084951","USD"

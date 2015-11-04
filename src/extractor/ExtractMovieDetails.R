@@ -26,8 +26,11 @@
 #     - Star3ID
 #     - Star3URL
 #     - BoxOfficeBudget
+#     - BoxOfficeBudgetCurr
 #     - BoxOfficeOpeningWeekend
+#     - BoxOfficeOpeningWeekendCurr
 #     - BoxOfficeGross
+#     - BoxOfficeGrossCurr
 #  
 #     +
 # 
@@ -51,7 +54,12 @@ extractMovieDetails <- function(inFile){
   urls <-  mainPageData$MovieURL
   x <- sapply(urls,extractSingleMovieDetail)
   x <- t(x)
-  colnames(x) <- c("DurationMins","Genre1","Genre2","Genre3","NumIMDBUserReviews","NumIMDBCriticReviews","DirectorName","DirectorID","DirectorURL","Star1Name","Star1ID","Star1URL","Star2Name","Star2ID","Star2URL","Star3Name","Star3ID","Star3URL")
+  colnames(x) <- c("DurationMins","Genre1","Genre2","Genre3","NumIMDBUserReviews","NumIMDBCriticReviews",
+                   "DirectorName","DirectorID","DirectorURL","Star1Name","Star1ID","Star1URL","Star2Name",
+                   "Star2ID","Star2URL","Star3Name","Star3ID","Star3URL","BoxOfficeBudget",
+                   "BoxOfficeBudgetCurr","BoxOfficeOpeningWeekend","BoxOfficeOpeningWeekendCurr",
+                   "BoxOfficeGross","BoxOfficeGrossCurr")
+  
   finalDF <- cbind(mainPageData,x)
   write.csv(finalDF,file = "../../data/movieDetails.csv",row.names = FALSE)
 }
@@ -120,20 +128,55 @@ extractSingleMovieDetail <- function(url){
   star3Id <-  ifelse(is.na(starsIds[3]),"",starsIds[3])
   star3URL <-  ifelse(is.na(starsURLs[3]),"",starsURLs[3])
   
-  #Below have ambiguity issues. Need to discuss
+  
   #Box Office Budget
-  #budget <- source.page %>% 
-  #  html_nodes("#titleDetails :nth-child(11)") %>%  
-  #  html_text() %>%
-  #  str_replace_all("[^0-9]","")
+  budget <- source.page %>% 
+    html_nodes("#titleDetails :nth-child(11)") %>%  
+    html_text()
+  
+  #detect if budget is usd
+  isUSD <- grepl("^\\\n\\s*Budget:\\s*\\$[0-9,]*.*$",budget)
+  budgetCurr <- "NA"
+  if(isUSD){
+    budgetCurr <- "USD"
+    budget <- str_replace_all(budget,"(\\\n\\s*Budget:\\s*\\$)([0-9,]*)((.|\\n)*)","\\2")
+    budget <- str_replace_all(budget,"[^0-9]","")
+  }
   
   #Opening Weekend
+  openweekend <- source.page %>% 
+    html_nodes("#titleDetails :nth-child(12)") %>%  
+    html_text()
+  
+  #detect if budget is usd
+  openweekendCurr <- "NA" 
+  isUSD <- grepl("^\\\n\\s*Opening Weekend:\\s*\\$[0-9,]*.*$",openweekend)
+  if(isUSD){
+    openweekendCurr <- "USD"
+    openweekend <- str_replace_all(openweekend,"(\\\n\\s*Opening Weekend:\\s*\\$)([0-9,]*)((.|\\n)*)","\\2")
+    openweekend <- str_replace_all(openweekend,"[^0-9]","")
+  }
   
   #Gross
+  gross <- source.page %>% 
+    html_nodes("#titleDetails :nth-child(13)") %>%  
+    html_text()
   
-  returnVector <- c(duration_mins,genre1,genre2,genre3,numImdbUserReviews,numImdbCriticReviews,directorName,directorID,directorURL,star1Name,star1Id,star1URL,star2Name,star2Id,star2URL,star3Name,star3Id,star3URL)  
+  #detect if budget is usd
+  grossCurr <- "NA" 
+  isUSD <- grepl("^\\\n\\s*Gross:\\s*\\$[0-9,]*.*$",gross)
+  if(isUSD){
+    grossCurr <- "USD"
+    gross <- str_replace_all(gross,"(\\\n\\s*Gross:\\s*\\$)([0-9,]*)((.|\\n)*)","\\2")
+    gross <- str_replace_all(gross,"[^0-9]","")
+  }
+  
+  returnVector <- c(duration_mins,genre1,genre2,genre3,numImdbUserReviews,numImdbCriticReviews,
+                    directorName,directorID,directorURL,star1Name,star1Id,star1URL,star2Name,
+                    star2Id,star2URL,star3Name,star3Id,star3URL,budget,budgetCurr,openweekend,
+                    openweekendCurr,gross,grossCurr)  
   return(returnVector)
 }
 
-#TODO: TEST CODE: Remove late
+#TODO: TEST CODE: Remove test code on completion
 extractMovieDetails(NULL)
