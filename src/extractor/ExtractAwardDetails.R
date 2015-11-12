@@ -48,14 +48,14 @@ library(stringr)
 
 extractMovieDetails <- function(inFile){
   #change to actual file "inFile" once all modules completed
-  mainPageData <- read.csv("../../data/dummy-mainPageData.csv",stringsAsFactors = FALSE)
+  mainPageData <- read.csv("../../data/movieDetails.csv",stringsAsFactors = FALSE)
   urls <-  mainPageData$MovieURL
   x <- sapply(urls,extractOscarWonNr)
   x <- t(x)
   colnames(x) <- c("NumOscars")
   
   finalDF <- cbind(mainPageData,x)
-  write.csv(finalDF,file = "../../data/movieDetails.csv",row.names = FALSE)
+  write.csv(finalDF,file = "../../data/movieDetails-withAwards.csv",row.names = FALSE)
 }
 
 extractOscarWonNr <- function(url){
@@ -63,11 +63,15 @@ extractOscarWonNr <- function(url){
   
   #NumOscarWins
   NumOscarWins <- source.page %>% 
-    html_nodes("#titleAwardsRanks :nth-child(1)") %>%  
+    html_nodes("#titleAwardsRanks b") %>%  
     html_text() %>% 
     str_replace_all("[^0-9]","")
   
-  returnVector <- c(NumOscarWins)  
+  if(length(NumOscarWins)==0){
+    returnVector <- 0
+  } else{
+  returnVector <- c(as.numeric(NumOscarWins))
+}
   return(returnVector)
 }
 
