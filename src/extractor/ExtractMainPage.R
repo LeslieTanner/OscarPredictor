@@ -28,7 +28,7 @@ extractMainPage <- function(url){
   MovieTitle <- MovieTitle[2:length(MovieTitle)]
     
   # MovieURL
-  MovieURL <- str_c("www.imdb.com", (source.page %>% html_nodes(".title a:nth-child(1)") %>%  
+  MovieURL <- str_c("http://www.imdb.com", (source.page %>% html_nodes(".title a:nth-child(1)") %>%  
     html_attr("href")))
   
   # MovieID
