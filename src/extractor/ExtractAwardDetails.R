@@ -20,6 +20,7 @@
 #     - MovieNumUserRatings
 #     - ReleaseDateUS
 #     - DurationMins
+#     - ReleaseYear
 #     - Genre1
 #     - Genre2 ( "" if not exists)
 #     - Genre3 ( "" if not exists)
@@ -48,12 +49,13 @@ library(stringr)
 
 extractMovieDetails <- function(inFile){
   #change to actual file "inFile" once all modules completed
-  mainPageData <- read.csv("../../data/movieDetails.csv",stringsAsFactors = FALSE)
+  mainPageData <- read.csv("../../data/MainPageData.csv",stringsAsFactors = FALSE)
+  mainPageData <- mainPageData[4001:4670, ]
   urls <-  mainPageData$MovieURL
   x <- sapply(urls,extractOscarWonNr)
-  x <- t(x)
+  x <- data.frame(x)
   colnames(x) <- c("NumOscars")
-  
+  row.names(x) <- NULL
   finalDF <- cbind(mainPageData,x)
   write.csv(finalDF,file = "../../data/movieDetails-withAwards.csv",row.names = FALSE)
 }
@@ -71,9 +73,9 @@ extractOscarWonNr <- function(url){
     returnVector <- 0
   } else{
   returnVector <- c(as.numeric(NumOscarWins))
-}
+  }
   return(returnVector)
 }
 
 #TODO: TEST CODE: Remove test code on completion
-extractOscarWonNr(NULL)
+extractMovieDetails("../../data/MainPageData.csv")
