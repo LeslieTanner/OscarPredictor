@@ -220,28 +220,31 @@ extractSingleMovieDetail <- function(i,urls){
   directorNode7 <- source.page %>% 
     html_nodes("#overview-top .txt-block:nth-child(7)") %>%  
     html_text()
-  if(grepl(pattern="Director",x=directorNode7)){
+  if(length(directorNode7) > 0 && grepl(pattern="Director",x=directorNode7)){
     css_node <- "#overview-top :nth-child(7) .itemprop"
+    css_url <- "#overview-top :nth-child(7) a"
   }  else{
     directorNode8 <- source.page %>% 
       html_nodes("#overview-top .txt-block:nth-child(8)") %>%  
       html_text()
-    if(grepl(pattern="Director",x=directorNode8)){
+    if(length(directorNode8) > 0 && grepl(pattern="Director",x=directorNode8)){
       css_node <- "#overview-top :nth-child(8) .itemprop"
+      css_url <- "#overview-top :nth-child(8) a"
     }else{
       css_node <- "#overview-top :nth-child(9) .itemprop"
+      css_url <- "#overview-top :nth-child(9) a"
     }
   }
   
   #DirectorName
   directorName <- source.page %>% 
-    html_nodes("#overview-top :nth-child(8) .itemprop") %>%  
+    html_nodes(css_node) %>%  
     html_text()
   directorName <- ifelse(length(directorName)<1,NA,directorName)
   
   #DirectorURL and DirectorID
   directorURL <- source.page %>% 
-    html_nodes("#overview-top :nth-child(8) a") %>%  
+    html_nodes(css_url) %>%  
     html_attr("href") %>%
     str_replace_all("\\?.*","")
   directorURL <- ifelse(is.na(directorURL[2]),NA,paste0('http://imdb.com',directorURL[2]))
@@ -252,16 +255,19 @@ extractSingleMovieDetail <- function(i,urls){
   starsNode8 <- source.page %>% 
     html_nodes("#overview-top .txt-block:nth-child(8)") %>%  
     html_text()
-  if(grepl(pattern="Stars:",x=starsNode8)){
+  if(length(starsNode8)>0 && grepl(pattern="Stars:",x=starsNode8)){
     css_node <- "#overview-top :nth-child(8) .itemprop"
+    css_url <- "#overview-top :nth-child(8) a"
   }  else{
     starsNode9 <- source.page %>% 
       html_nodes("#overview-top .txt-block:nth-child(9)") %>%  
       html_text()
-      if(grepl(pattern="Stars:",x=starsNode9)){
+      if(length(starsNode9)>0 && grepl(pattern="Stars:",x=starsNode9)){
         css_node <- "#overview-top :nth-child(9) .itemprop"
+        css_url <- "#overview-top :nth-child(9) a"
       }else{
         css_node <- "#overview-top :nth-child(10) .itemprop"
+        css_url <- "#overview-top :nth-child(10) a"
       }
   }
     
@@ -269,7 +275,7 @@ extractSingleMovieDetail <- function(i,urls){
     html_nodes(css_node) %>%  
     html_text()
   starsURLs <- source.page %>% 
-    html_nodes("css_node") %>%  
+    html_nodes(css_url) %>%  
     html_attr("href") %>%
     str_replace_all("\\?.*","")
   starsURLs <- starsURLs[1:3]
