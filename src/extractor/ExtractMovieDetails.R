@@ -148,7 +148,7 @@ extractMovieDetails <- function(mainPageData){
   
   x <- t(x)
   
-  colnames(x) <- c("ReleaseYear", "IMDBRating","NumberOfUsersRated","DurationMins", "ReleaseDate", "Genre1","Genre2","Genre3","NumIMDBUserReviews",
+  colnames(x) <- c("ReleaseYear", "IMDBRating","NumberOfUsersRated","DurationMins", "ReleaseDate", "Genre1","Genre2","Genre3",
                    "NumIMDBCriticReviews",
                    "DirectorName","DirectorID","DirectorURL","Star1Name","Star1ID","Star1URL","Star2Name",
                    "Star2ID","Star2URL","Star3Name","Star3ID","Star3URL","BoxOfficeBudget",
@@ -169,8 +169,9 @@ extractSingleMovieDetail <- function(i,urls){
   source.page <- read_html(url)
   #release year
   release_yr <- source.page %>% 
-    html_nodes(".header a") %>%  
-    html_text() 
+    html_nodes(".header .nobr") %>%  
+    html_text() %>%
+    str_replace_all("[^0-9]","")
   release_yr <- ifelse(length(release_yr)<1,NA,release_yr)
   
   #movie rating
@@ -207,19 +208,30 @@ extractSingleMovieDetail <- function(i,urls){
   genre2 <- genres[2]
   genre3 <- genres[3]
   
-  #NumImdbUserReviews
-  numImdbUserReviews <- source.page %>% 
-    html_nodes(".star-box-details a:nth-child(3) span") %>%  
-    html_text() %>% 
-    str_replace_all(",","")
-  numImdbUserReviews <- ifelse(length(numImdbUserReviews)<1,NA,numImdbUserReviews)
-  
   #NumImdbCriticReviews
   numImdbCriticReviews <- source.page %>% 
     html_nodes(".star-box-details a:nth-child(8) span") %>%  
     html_text() %>% 
     str_replace_all("[^0-9]","")
   numImdbCriticReviews <- ifelse(length(numImdbCriticReviews)<1,NA,numImdbCriticReviews)
+  
+  #Directors
+  #detect Director Node
+  directorNode7 <- source.page %>% 
+    html_nodes("#overview-top .txt-block:nth-child(7)") %>%  
+    html_text()
+  if(grepl(pattern="Director",x=directorNode7)){
+    css_node <- "#overview-top :nth-child(7) .itemprop"
+  }  else{
+    directorNode8 <- source.page %>% 
+      html_nodes("#overview-top .txt-block:nth-child(8)") %>%  
+      html_text()
+    if(grepl(pattern="Director",x=directorNode8)){
+      css_node <- "#overview-top :nth-child(8) .itemprop"
+    }else{
+      css_node <- "#overview-top :nth-child(9) .itemprop"
+    }
+  }
   
   #DirectorName
   directorName <- source.page %>% 
@@ -232,15 +244,32 @@ extractSingleMovieDetail <- function(i,urls){
     html_nodes("#overview-top :nth-child(8) a") %>%  
     html_attr("href") %>%
     str_replace_all("\\?.*","")
-  directorURL <- directorURL[2]
+  directorURL <- ifelse(is.na(directorURL[2]),NA,paste0('http://imdb.com',directorURL[2]))
   directorID <- str_replace_all(directorURL,'http://www.imdb.com/name/|/$',"")
   
   #Stars
+  #detect stars node
+  starsNode8 <- source.page %>% 
+    html_nodes("#overview-top .txt-block:nth-child(8)") %>%  
+    html_text()
+  if(grepl(pattern="Stars:",x=starsNode8)){
+    css_node <- "#overview-top :nth-child(8) .itemprop"
+  }  else{
+    starsNode9 <- source.page %>% 
+      html_nodes("#overview-top .txt-block:nth-child(9)") %>%  
+      html_text()
+      if(grepl(pattern="Stars:",x=starsNode9)){
+        css_node <- "#overview-top :nth-child(9) .itemprop"
+      }else{
+        css_node <- "#overview-top :nth-child(10) .itemprop"
+      }
+  }
+    
   stars <- source.page %>% 
-    html_nodes("#overview-top :nth-child(10) .itemprop") %>%  
+    html_nodes(css_node) %>%  
     html_text()
   starsURLs <- source.page %>% 
-    html_nodes("#overview-top :nth-child(10) a") %>%  
+    html_nodes("css_node") %>%  
     html_attr("href") %>%
     str_replace_all("\\?.*","")
   starsURLs <- starsURLs[1:3]
@@ -248,13 +277,13 @@ extractSingleMovieDetail <- function(i,urls){
   starsIds <- str_replace_all(starsURLs,'/name/|/$',"")
   star1Name <-  stars[1]
   star1Id <-  starsIds[1]
-  star1URL <-  starsURLs[1]
+  star1URL <-  ifelse(is.na(starsURLs[1]),NA,paste0('http://www.imdb.com',starsURLs[1]))
   star2Name <-  stars[2]
   star2Id <-  starsIds[2]
-  star2URL <-  starsURLs[2]
+  star2URL <-  ifelse(is.na(starsURLs[2]),NA,paste0('http://www.imdb.com',starsURLs[2]))
   star3Name <-  stars[3]
   star3Id <-  starsIds[3]
-  star3URL <-  starsURLs[3]
+  star3URL <-  ifelse(is.na(starsURLs[3]),NA,paste0('http://www.imdb.com',starsURLs[3]))
   
   #Box Office Budget
   budget <- source.page %>% 
@@ -313,7 +342,7 @@ extractSingleMovieDetail <- function(i,urls){
     numOscarWins <- c(as.numeric(numOscarWins))
   }
   
-  returnVector <- c(release_yr, movie_rating, MovieNumUserRatings, duration_mins,ReleaseDate,genre1,genre2,genre3,numImdbUserReviews,numImdbCriticReviews,
+  returnVector <- c(release_yr, movie_rating, MovieNumUserRatings, duration_mins,ReleaseDate,genre1,genre2,genre3,numImdbCriticReviews,
                     directorName,directorID,directorURL,star1Name,star1Id,star1URL,star2Name,
                     star2Id,star2URL,star3Name,star3Id,star3URL,budget,budgetCurr,openweekend,
                     openweekendCurr,gross,grossCurr,numOscarWins)  
