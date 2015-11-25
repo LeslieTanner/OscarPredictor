@@ -3,5 +3,7 @@
 source("ExtractMainPage.R")
 source("ExtractMovieDetails.R")
 mainPage <- extractMainPage()
+save(mainPage,file="../../data/mainPageData.RData")
+load(file="../../data/mainPageData.RData")
 movieDataFrame  <-  extractMovieDetails(mainPage)
-save(movieDataFrame,file="../../data/movieData.R")
+save(movieDataFrame,file="../../data/movieData.RData")

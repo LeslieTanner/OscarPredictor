@@ -221,18 +221,18 @@ extractSingleMovieDetail <- function(i,urls){
     html_nodes("#overview-top .txt-block:nth-child(7)") %>%  
     html_text()
   if(length(directorNode7) > 0 && grepl(pattern="Director",x=directorNode7)){
-    css_node <- "#overview-top :nth-child(7) .itemprop"
-    css_url <- "#overview-top :nth-child(7) a"
+    css_node <- "#overview-top .txt-block:nth-child(7) .itemprop"
+    css_url <- "#overview-top .txt-block:nth-child(7) a"
   }  else{
     directorNode8 <- source.page %>% 
       html_nodes("#overview-top .txt-block:nth-child(8)") %>%  
       html_text()
     if(length(directorNode8) > 0 && grepl(pattern="Director",x=directorNode8)){
-      css_node <- "#overview-top :nth-child(8) .itemprop"
-      css_url <- "#overview-top :nth-child(8) a"
+      css_node <- "#overview-top .txt-block:nth-child(8) .itemprop"
+      css_url <- "#overview-top .txt-block:nth-child(8) a"
     }else{
-      css_node <- "#overview-top :nth-child(9) .itemprop"
-      css_url <- "#overview-top :nth-child(9) a"
+      css_node <- "#overview-top .txt-block:nth-child(9) .itemprop"
+      css_url <- "#overview-top .txt-block:nth-child(9) a"
     }
   }
   
@@ -244,10 +244,11 @@ extractSingleMovieDetail <- function(i,urls){
   
   #DirectorURL and DirectorID
   directorURL <- source.page %>% 
-    html_nodes(css_url) %>%  
-    html_attr("href") %>%
+    html_nodes(css_url)   
+  directorURL <- directorURL[grepl(pattern="itemprop=\"name\"",x=directorURL)]
+  directorURL <-  html_attr(directorURL,"href") %>%
     str_replace_all("\\?.*","")
-  directorURL <- ifelse(is.na(directorURL[2]),NA,paste0('http://imdb.com',directorURL[2]))
+  directorURL <- ifelse(is.na(directorURL[1]),NA,paste0('http://www.imdb.com',directorURL[1]))
   directorID <- str_replace_all(directorURL,'http://www.imdb.com/name/|/$',"")
   
   #Stars
@@ -275,8 +276,9 @@ extractSingleMovieDetail <- function(i,urls){
     html_nodes(css_node) %>%  
     html_text()
   starsURLs <- source.page %>% 
-    html_nodes(css_url) %>%  
-    html_attr("href") %>%
+    html_nodes(css_url) 
+  starsURLs <- starsURLs[grepl(pattern="itemprop=\"name\"",x=starsURLs)]
+  starsURLs <-  html_attr(starsURLs,"href") %>%
     str_replace_all("\\?.*","")
   starsURLs <- starsURLs[1:3]
   
