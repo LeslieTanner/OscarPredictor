@@ -19,7 +19,7 @@ library(rvest)
 library(magrittr)
 library(stringr)
 
-extractActorFilmography <- function(url){
+extractActorFilmography <- function(url, pause){
     print(url)
     source.page <- read_html(url)
     
@@ -71,13 +71,14 @@ extractActorFilmography <- function(url){
     list <- list(StarName = ActorID, AllYears = AllYears, FilmYears = FilmYears,
                  TVYears = TVYears, TVMultiYears = TVMultiYears)
     
-    # mean wait time of 4/3 = 1.33s
-    Sys.sleep(rgamma(1, 4, 3))
+    # mean wait time of `pause` secs
+    Sys.sleep(rgamma(1, 2*pause, 2))
+    
     return(list)
 }
 
 extractActorDetails <- function(movieDetails, chunksize = 100, 
-                                startIndex = 1, endIndex, 
+                                startIndex = 1, endIndex, pause = 1,
                                 dataDir = dataDir){
     # Get the unique actor URLs
     StarURLs <- unique(c(as.character(movieDetails$Star1URL),
@@ -103,7 +104,7 @@ extractActorDetails <- function(movieDetails, chunksize = 100,
         print(filename)
         
         if(!file.exists(filename)){
-            actorData <- lapply(StarURLs[minIndex:maxIndex],extractActorFilmography)
+            actorData <- lapply(StarURLs[minIndex:maxIndex],extractActorFilmography, pause = pause)
             save(actorData, file = filename)
             actorDetails[[i]] <- actorData
         } else {

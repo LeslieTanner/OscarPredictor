@@ -39,7 +39,7 @@ library(data.table)
 
 ###########################################################################
 
-extractSingleMovieDetail <- function(url){
+extractSingleMovieDetail <- function(url, pause){
   print(url)
   source.page <- read_html(url)
   #release year
@@ -263,14 +263,15 @@ extractSingleMovieDetail <- function(url){
                         "Star2Name","Star2ID","Star2URL","Star3Name","Star3ID","Star3URL",
                         "BoxOfficeBudget","BoxOfficeBudgetCurr","BoxOfficeOpeningWeekend","BoxOfficeOpeningWeekendCurr",
                         "BoxOfficeGross","BoxOfficeGrossCurr","NumberOfOscars")
-  # mean wait time of 4/3 = 1.33s
-  Sys.sleep(rgamma(1, 4, 3))
+  # mean wait time of `pause` secs
+  Sys.sleep(rgamma(1, 2*pause, 2))
   
   return(returnList)
 }
 
 
-extractMovieDetails <- function(mainPageData, chunksize = 100, startIndex = 1, endIndex = nrow(mainPageData), dataDir){
+extractMovieDetails <- function(mainPageData, chunksize = 100, startIndex = 1, 
+                                endIndex = nrow(mainPageData), dataDir, pause = 1){
     urls <-  as.character(mainPage$MovieURL)
     if(missing(endIndex)){
         endIndex = nrow(mainPageData)
@@ -290,7 +291,7 @@ extractMovieDetails <- function(mainPageData, chunksize = 100, startIndex = 1, e
         print(filename)
         
         if(!file.exists(filename)){
-            movieData <- lapply(urls[minIndex:maxIndex],extractSingleMovieDetail)
+            movieData <- lapply(urls[minIndex:maxIndex],extractSingleMovieDetail, pause = pause)
             movieData <- rbindlist(movieData)
             save(movieData, file = filename)
             movieDetails[[i]] <- movieData
