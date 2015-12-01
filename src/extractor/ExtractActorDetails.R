@@ -19,13 +19,15 @@ library(rvest)
 library(magrittr)
 library(stringr)
 
-dataDir <- '~/Git/OscarPredictor/data/'
-
-# imdb_name <- "www.imdb.com"
-
-#url = 'http://www.imdb.com/name/nm0001774/'
 extractActorFilmography <- function(url){
+    print(url)
     source.page <- read_html(url)
+    
+    # actor or actress?
+    gender <- source.page %>% 
+        html_nodes('#name-job-categories .itemprop') %>%
+        html_text()
+    gender <- ifelse(sum(str_detect(gender,"Actress")) > 0,"actress","actor")
     
     # Actor name
     ActorID <- source.page %>% 
@@ -35,12 +37,12 @@ extractActorFilmography <- function(url){
     # Years for all films/TV shows where ActorID was an actor.  Take only the first year
     # listed when the form is 1111-2222
     FilmographyYears <- source.page %>%
-        html_nodes("#filmo-head-actor+ .filmo-category-section .year_column") %>%
+        html_nodes(paste0("#filmo-head-",gender,"+ .filmo-category-section .year_column")) %>%
         html_text() %>% str_trim() %>% str_extract("[0-9]{4}") %>% as.integer()
     
     # All Filmography info for the films/TV shows
     Filmographies <- source.page %>%
-        html_nodes("#filmo-head-actor+ .filmo-category-section .filmo-row") %>% 
+        html_nodes(paste0("#filmo-head-",gender,"+ .filmo-category-section .year_column")) %>% 
         html_text() %>% str_trim()
     
     # Which indices are for TV shows?
@@ -66,27 +68,51 @@ extractActorFilmography <- function(url){
     TVMultiYears <- sort(FilmographyYears[IndicesTVMultiYears])
     
     # Combine all into *List* (because of differing lengths)
-    list <- list(ActorID = ActorID, AllYears = AllYears, FilmYears = FilmYears,
+    list <- list(StarName = ActorID, AllYears = AllYears, FilmYears = FilmYears,
                  TVYears = TVYears, TVMultiYears = TVMultiYears)
     
-    # mean wait time of 4/2 = 2s
-    Sys.sleep(rgamma(1, 4, 2))
+    # mean wait time of 4/3 = 1.33s
+    Sys.sleep(rgamma(1, 4, 3))
     return(list)
 }
 
-# Read the movie data for the URL's for each actor
-load("movieDetails.Rdata")
-#movieDetails <- read.csv(paste0(dataDir,"movieDetails.csv"), stringsAsFactors = FALSE)
-
-# Get the unique actor URLs
-StarURLs <- unique(c(movieDetails$Star1URL,movieDetails$Star3URL,movieDetails$Star3URL))
-StarURLs <- StarURLs[!is.na(StarURLs)]
-names(StarURLs) <- StarURLs
-
-# Loop over them, getting the acting role year data for each
-starDetails <- lapply(StarURLs, extractActorFilmography)
-
-# Save R.Data
-save(list = ls(all.names = TRUE), file = 
-         paste0("ExtractActorDetails_", format(Sys.time(), '%m.%d.%Y'),".RData"))
-
+extractActorDetails <- function(movieDetails, chunksize = 100, 
+                                startIndex = 1, endIndex, 
+                                dataDir = dataDir){
+    # Get the unique actor URLs
+    StarURLs <- unique(c(as.character(movieDetails$Star1URL),
+                         as.character(movieDetails$Star3URL),
+                         as.character(movieDetails$Star3URL)))
+    StarURLs <- StarURLs[!is.na(StarURLs)]
+    names(StarURLs) <- StarURLs
+    if(missing(endIndex)){
+        endIndex = length(StarURLs)
+    }
+    
+    numberOfChunks <- ceiling((endIndex-startIndex+1)/chunksize)
+    actorDetails <- list()
+    length(actorDetails) <- numberOfChunks
+    
+    print(paste0("Extracting actors ",startIndex," to ",endIndex))
+    
+    for(i in 1:numberOfChunks){
+        minIndex = (i - 1)*chunksize + 1
+        maxIndex = min(minIndex + chunksize - 1, endIndex, length(StarURLs))
+        filename = paste0(dataDir,"actorDetails",minIndex,"to",maxIndex,".RData")
+        
+        print(filename)
+        
+        if(!file.exists(filename)){
+            actorData <- lapply(StarURLs[minIndex:maxIndex],extractActorFilmography)
+            save(actorData, file = filename)
+            actorDetails[[i]] <- actorData
+        } else {
+            load(file = filename)
+            actorDetails[[i]] <- actorData
+        }
+        print("");print("")
+    }
+    actorData <- Reduce(c, actorDetails)
+    
+    return(actorData)
+}
