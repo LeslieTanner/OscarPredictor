@@ -26,7 +26,7 @@ if(!file.exists(paste0(dataDir,"movieData.RData"))){
 
 if(!file.exists(paste0(dataDir,"actorData.RData"))){
     actorData  <-  extractActorDetails(movieDetails = movieDataFrame, chunksize = 100, 
-                                       startIndex = 1, endIndex = nrow(movieDetails), 
-                                       dataDir = dataDir, pause = .5)
+                                       startIndex = 1, 
+                                       dataDir = dataDir, pause = .3)
     save(actorData, file=paste0(dataDir,"actorData.RData"))
 }
