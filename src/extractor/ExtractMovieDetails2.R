@@ -72,7 +72,7 @@ extractSingleMovieDetail <- function(url, pause){
   MPAArating <- source.page %>% 
       html_nodes(".infobar") %>%  
       html_text()
-  MPAArating <- str_extract(MPAArating,"(G|PG|PG-13|PG 13|R|NC-17|NC 17)")
+  MPAArating <- str_extract(MPAArating,"(G|PG-13|PG 13|PG|R|NC-17|NC 17)")
   
   #genres
   genres <- source.page %>% 
