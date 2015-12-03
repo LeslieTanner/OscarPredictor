@@ -26,7 +26,7 @@ cpi$`Dec-Dec%Chg` <- as.numeric(cpi$`Dec-Dec%Chg`)
 cpi$`Avg-Avg%Chg` <- as.numeric(cpi$`Avg-Avg%Chg`)
 
 # calculate inflation relative to 2012
-cpi$inflation <- cpi$AvgAnnual[99]/cpi$AvgAnnual
+cpi$inflation <- cpi$AvgAnnual[cpi$Year==1980]/cpi$AvgAnnual
 
 dataDir <- "/Users/michaellenart/Documents/Oscars/OscarPredictor/data/"
 save(cpi, file = paste0(dataDir,"cpi.RData"))
