@@ -69,10 +69,13 @@ extractSingleMovieDetail <- function(url, pause){
   ReleaseDate <- ifelse(length(ReleaseDate)<1,NA,ReleaseDate[1])
   
   #MPAA rating
-  MPAArating <- source.page %>% 
+  infobar <- source.page %>% 
       html_nodes(".infobar") %>%  
       html_text()
-  MPAArating <- str_extract(MPAArating,"(G|PG-13|PG 13|PG|R|NC-17|NC 17)")
+  infobar <- str_trim(infobar)
+  MPAArating <- str_trim(str_extract(infobar,"(^|[\\s])(G|PG-13|PG 13|PG|R|NC-17|NC 17)[\\s]"))
+  # TV Movie?
+  TV <- str_trim(str_extract(infobar,"(^|[\\s])TV [a-zA-z]*"))
   
   #genres
   genres <- source.page %>% 
