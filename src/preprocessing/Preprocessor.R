@@ -10,6 +10,8 @@
 #x -replace missing values of regressors with estimates where appropriate (number of critics)
 #x -replace missing values of regressors with NA strings where appropriate (i.e. for MPAA rating)
 #x -reduce movie data to complete cases
+#x -remove TV rows?
+
 library(stringr)
 library(data.table)
 
@@ -18,6 +20,51 @@ load(file=paste0(dataDir,"movieData.RData"))
 load(file=paste0(dataDir,"actorData.RData"))
 load(file=paste0(dataDir,"mainPageData.RData"))
 
+###########
+# Does what it says!
+addFactorColumns <- function(data, names, maxLevels = 8, minDensity = 0, NAValue = "NA"){
+    for(name in names){
+        data[[name]][is.na(data[[name]])] = "NA"
+    }
+    
+    # throw out factors with more than maxLevels, if specified
+    if(!missing(maxLevels)){
+        levelCounts <- lapply(names, function(name) length(unique(data[[name]])))
+        names(levelCounts) <- names
+        names <- setdiff(names, names(levelCounts)[levelCounts > maxLevels])
+    }
+    
+    # throw out levels with less than minDensity
+    if(minDensity != 0){
+        levelCounts <- lapply(names, function(name) table(data[[name]]))
+        names(levelCounts) <- names
+        levelCounts <- lapply(levelCounts, function(table) table/nrow(data))
+        levelCounts <- lapply(levelCounts, function(table) table[table > minDensity])
+    }
+    
+    # add the columns if there are any left
+    #####
+    if(length(levelCounts) > 0){
+        for(factorName in names(levelCounts)){
+            table = levelCounts[[factorName]]
+            for(levelName in names(table)){
+                level = table[[levelName]]
+                print(factorName)
+                print(levelName)
+                columnName = paste0(factorName,".",as.character(levelName))
+                print(columnName)
+                column <-  integer(nrow(data))
+                column[data[[factorName]] == levelName] = 1
+                data[[columnName]] = column
+            }
+        }
+    }
+    
+    data <- data[,setdiff(names(data), names)]
+    return(data)
+}
+
+###########
 # Add movie titles
 dim(movieDataFrame)
 dim(mainPage)
@@ -28,6 +75,7 @@ names(movieDataFrame)
 ########
 # Explotatory
 summary(movieDataFrame)
+
 hist(movieDataFrame$DurationMins, xlim = c(0,480), breaks = 300)
 par(mfrow = c(1,2))
 hist(movieDataFrame$NumberOfCriticsRated, xlim = c(0,800), breaks = 150)
@@ -59,10 +107,13 @@ sum(bool, na.rm = TRUE)/length(languages)
 ########
 # Add the flag for English
 movieDataFrame$English <- 0
+languages <- movieDataFrame$Language
+bool <- sapply(languages, function(str) str_detect(str,"^English"))
 movieDataFrame$English[bool] = 1
 
 ########
-# Remove years > 2013 (incomplete data) and NA values
+# Remove years > 2012 (incomplete data) and NA values
+# This should help with bias since the later years are poorly sampled
 movieDataFrame <- movieDataFrame[movieDataFrame$ReleaseYear < 2013,]
 movieDataFrame <- movieDataFrame[!is.na(movieDataFrame$ReleaseYear),]
 summary(movieDataFrame$ReleaseYear)
@@ -84,27 +135,56 @@ movieDataFrame$NumberOfCriticsRated[is.na(movieDataFrame$NumberOfCriticsRated)] 
 summary(movieDataFrame$NumberOfCriticsRated)
 
 ########
-# Basically, throw out a bunch of TV trash
-sum(is.na(movieDataFrame$NumberOfUsersRated) & !is.na(movieDataFrame$IMDBRating))
+# replace missing values of IMDBRating and NumberOfUsersRated
+par(mfrow = c(1,2))
+hist(movieDataFrame$NumberOfUsersRated)
+median = median(movieDataFrame$NumberOfUsersRated, na.rm = TRUE)
+median
+movieDataFrame$NumberOfUsersRated[is.na(movieDataFrame$NumberOfUsersRated)] = median
 summary(movieDataFrame$NumberOfUsersRated)
+
+hist(movieDataFrame$IMDBRating)
+median = median(movieDataFrame$IMDBRating, na.rm = TRUE)
+median
+movieDataFrame$IMDBRating[is.na(movieDataFrame$IMDBRating)] = median
 summary(movieDataFrame$IMDBRating)
-movieDataFrame$TV[is.na(movieDataFrame$NumberOfUsersRated) & !is.na(movieDataFrame$IMDBRating)]
 
-which(is.na(movieDataFrame$NumberOfUsersRated) & !is.na(movieDataFrame$IMDBRating))
-which(str_detect(movieDataFrame$TV, "TV"))
-
-movieDataFrame <- movieDataFrame[!is.na(movieDataFrame$NumberOfUsersRated),]
-dim(movieDataFrame)
+# # Basically, throw out a bunch of TV trash
+# sum(is.na(movieDataFrame$NumberOfUsersRated) & !is.na(movieDataFrame$IMDBRating))
+# summary(movieDataFrame$NumberOfUsersRated)
+# summary(movieDataFrame$IMDBRating)
+# movieDataFrame$TV[is.na(movieDataFrame$NumberOfUsersRated) & !is.na(movieDataFrame$IMDBRating)]
+# 
+# missingratings <- which(is.na(movieDataFrame$NumberOfUsersRated) & !is.na(movieDataFrame$IMDBRating))
+# tv <- which(str_detect(movieDataFrame$TV, "TV"))
+# missingratings
+# tv
+# setdiff(missingratings,tv)
+# 
+# movieDataFrame <- movieDataFrame[!is.na(movieDataFrame$NumberOfUsersRated),]
+# dim(movieDataFrame)
 
 ########
 genres <- unique(c(as.character(movieDataFrame$Genre1),as.character(movieDataFrame$Genre2), as.character(movieDataFrame$Genre3)))
-genreslist <- (c(as.character(movieDataFrame$Genre1),as.character(movieDataFrame$Genre2), as.character(movieDataFrame$Genre3)))
 genres <- genres[!is.na(genres)]
 length(genres)
+genreslist <- (c(as.character(movieDataFrame$Genre1),as.character(movieDataFrame$Genre2), as.character(movieDataFrame$Genre3)))
+# counts of all the genres
 table(genreslist)
+
+# how many shorts get oscars? a lot!
+sum(movieDataFrame$Genre2 == "Short" & movieDataFrame$NumberOfOscars >0, na.rm = TRUE)
+
+# make a dataframe of genre 0-1 values
 m <- matrix(0,nrow = nrow(movieDataFrame), ncol = length(genres))
 genres_df <- data.frame(m)
 names(genres_df) = genres
+
+# for(name in names(genres_df)){
+#     print(name)
+#     genres_df[[name]] = as.integer(movieDataFrame$Genre1 == name | movieDataFrame$Genre2 == name | movieDataFrame$Genre3 == name)
+#
+# }
 
 for( i  in 1:nrow(movieDataFrame)){
     g1 <- as.character(movieDataFrame$Genre1[i])
@@ -136,18 +216,11 @@ length(filmAppearances)
 filmAppearances <- rbindlist(filmAppearances)
 dim(filmAppearances)
 names(filmAppearances)
+summary(filmAppearances)
+sum(filmAppearances$MaxFilmAppearances > 200)
+movieDataFrame$MovieURL[filmAppearances$MaxFilmAppearances > 200]
 
 movieDataFrame <- cbind(movieDataFrame,filmAppearances)
-names(movieDataFrame)
-
-#######
-# remove columns no longer needed: genres, starURLs, starIDs, starNames, directorID, directorName,directorURL
-names <- setdiff(names(movieDataFrame), c("Language","ReleaseDate","Genre1","Genre2","Genre3",
-                                          "DirectorName","DirectorID","DirectorURL",
-                                          "Star1Name","Star1ID","Star1URL",
-                                          "Star2Name","Star2ID","Star2URL",
-                                          "Star3Name","Star3ID","Star3URL"))
-movieDataFrame <- movieDataFrame[,names]
 names(movieDataFrame)
 
 ########
@@ -158,16 +231,35 @@ sum(is.na(movieDataFrame$MPAARating))
 movieDataFrame$RatingG <- 0
 movieDataFrame$RatingPG <- 0
 movieDataFrame$RatingR <- 0
+movieDataFrame$RatingNC17 <- 0
 movieDataFrame$RatingNA <- 0
+
 movieDataFrame$RatingG[movieDataFrame$MPAARating == "G"] = 1
 movieDataFrame$RatingPG[movieDataFrame$MPAARating == "PG"] = 1
+movieDataFrame$RatingPG13[movieDataFrame$MPAARating == "PG-13"] = 1
 movieDataFrame$RatingR[movieDataFrame$MPAARating == "R"] = 1
+movieDataFrame$RatingNC17[movieDataFrame$MPAARating == "NC-17"] = 1
 movieDataFrame$RatingNA[is.na(movieDataFrame$MPAARating)] = 1
 
-movieDataFrame <- movieDataFrame[,setdiff(names(movieDataFrame), "MPAARating")]
+
+########
+# add TV factor columns
+
+table(movieDataFrame$TV,movieDataFrame$NumberOfOscars)
+
+#######
+# remove columns no longer needed: genres, starURLs, starIDs, starNames, directorID, directorName,directorURL
+names <- setdiff(names(movieDataFrame), c("Language","ReleaseDate","Genre1","Genre2","Genre3",
+                                          "DirectorName","DirectorID","DirectorURL",
+                                          "Star1Name","Star1ID","Star1URL",
+                                          "Star2Name","Star2ID","Star2URL",
+                                          "Star3Name","Star3ID","Star3URL","MPAARating"))
+movieDataFrame <- movieDataFrame[,names]
 names(movieDataFrame)
 
-# make a new copy of the clean data
+
+#######################
+# make a new copy of the clean data and save
 movieDFClean <- movieDataFrame
 
 save(movieDFClean, file = paste0(dataDir,"movieDFClean.RData"))
