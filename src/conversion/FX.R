@@ -3,6 +3,9 @@
 
 library(RCurl)
 library(XML)
+library(stringr)
+
+dataDir <- "/Users/michaellenart/Documents/Oscars/OscarPredictor/data/"
 
 # Function to obtain monthly exchange rates from 1/1980 to 12/2012
 get_rates <- function(url, currency){
@@ -69,3 +72,55 @@ rates <- rates[order(rates$index.x, decreasing = TRUE),]
 rates <- fix_index(rates, "index.x")
 rownames(rates) <- 1:nrow(rates)
 
+# create column with quarter name by splitting mont/year in 2 columns then delete temporary columns
+rates$Month <- as.character(rates$Month)
+rates$month <- lapply(rates$Month, function(x) unlist(strsplit(x, "/"))[[1]])
+rates$year <- ""
+rates$year <- lapply(rates$Month, function(x) unlist(strsplit(x, "/"))[[2]])
+rates$qtr <- cut(as.numeric(rates$month), breaks=c(0, 3, 6, 9, 12), labels = c("1Q", "2Q", "3Q", "4Q"))
+rates$Qtr <- paste(rates$qtr, as.character(rates$year))
+names <- setdiff(names(rates),c("month", "year", "qtr"))
+rates <- rates[,names]
+
+# rates need to be reformatted inorder to calculate the average
+rates$EUR <- as.numeric(as.character(rates$EUR))
+rates$GBP <- as.numeric(as.character(rates$GBP))
+rates$SEK <- as.numeric(as.character(rates$SEK))
+rates$ESP <- as.numeric(as.character(rates$ESP))
+rates$DEM <- as.numeric(as.character(rates$DEM))
+rates$ITL <- as.numeric(as.character(rates$ITL))
+rates$JPY <- as.numeric(as.character(rates$JPY))
+rates$SGD <- as.numeric(as.character(rates$SGD))
+
+# # save monthly rates to an RData file
+save(rates, file = paste0(dataDir,"FX_rates.RData"))
+
+# calculate average rates by quarter
+EUR_Avg <- aggregate(rates$EUR,by = list(rates$Qtr), mean)
+names(EUR_Avg) <- c("Qtr", "EUR")
+GBP_Avg <- aggregate(rates$GBP,by = list(rates$Qtr), mean)
+names(GBP_Avg) <- c("Qtr", "GBP")
+SEK_Avg <- aggregate(rates$SEK,by = list(rates$Qtr), mean)
+names(SEK_Avg) <- c("Qtr", "SEK")
+ESP_Avg <- aggregate(rates$ESP,by = list(rates$Qtr), mean)
+names(ESP_Avg) <- c("Qtr", "ESP")
+DEM_Avg <- aggregate(rates$DEM,by = list(rates$Qtr), mean)
+names(DEM_Avg) <- c("Qtr", "DEM")
+ITL_Avg <- aggregate(rates$ITL,by = list(rates$Qtr), mean)
+names(ITL_Avg) <- c("Qtr", "ITL")
+JPY_Avg <- aggregate(rates$JPY,by = list(rates$Qtr), mean)
+names(JPY_Avg) <- c("Qtr", "JPY")
+SGD_Avg <- aggregate(rates$SGD,by = list(rates$Qtr), mean)
+names(SGD_Avg) <- c("Qtr", "SGD")
+
+# merger quarterly rates into a single dataframe
+qrtly_rates <- merge(EUR_Avg, GBP_Avg, by="Qtr")
+qrtly_rates <- merge(qrtly_rates, SEK_Avg, by="Qtr")
+qrtly_rates <- merge(qrtly_rates, ESP_Avg, by="Qtr")
+qrtly_rates <- merge(qrtly_rates, DEM_Avg, by="Qtr")
+qrtly_rates <- merge(qrtly_rates, ITL_Avg, by="Qtr")
+qrtly_rates <- merge(qrtly_rates, JPY_Avg, by="Qtr")
+qrtly_rates <- merge(qrtly_rates, SGD_Avg, by="Qtr")
+
+# save quarterly rates to an RData file
+save(qrtly_rates, file = paste0(dataDir,"FX_qrtly.RData"))
