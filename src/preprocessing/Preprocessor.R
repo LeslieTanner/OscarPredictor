@@ -1,15 +1,15 @@
 # This code takes as input the dataframes mainPage, and movieDataFrame, and the list actorData, and
 # does the following:
-# -incorporate 1 column of film counts and 1 column of TV counts for each of the top 3 stars.
+#x -incorporate 1 column of film counts and 1 column of TV counts for each of the top 3 stars.
 #x -set NA's to 0 for NumberOfCriticsRated
 # -convert foreign currencies to USD
 # -convert USD to inflation-adjusted 2015 USD
 #x -add 0-1 columns for specific factor values (genre, language(English/non)).
-# -add interatction term columns for factors with few levels
+# -add interaction term columns for factors with few levels
 # -remove factor columns which are too sparse
 #x -replace missing values of regressors with estimates where appropriate (number of critics)
-# -replace missing values of regressors with NA strings where appropriate (i.e. for MPAA rating)
-# -reduce movie data to complete cases
+#x -replace missing values of regressors with NA strings where appropriate (i.e. for MPAA rating)
+#x -reduce movie data to complete cases
 library(stringr)
 library(data.table)
 
@@ -88,15 +88,20 @@ summary(movieDataFrame$NumberOfCriticsRated)
 sum(is.na(movieDataFrame$NumberOfUsersRated) & !is.na(movieDataFrame$IMDBRating))
 summary(movieDataFrame$NumberOfUsersRated)
 summary(movieDataFrame$IMDBRating)
-movieDataFrame[is.na(movieDataFrame$NumberOfUsersRated) & !is.na(movieDataFrame$IMDBRating),][7:10,]
+movieDataFrame$TV[is.na(movieDataFrame$NumberOfUsersRated) & !is.na(movieDataFrame$IMDBRating)]
+
+which(is.na(movieDataFrame$NumberOfUsersRated) & !is.na(movieDataFrame$IMDBRating))
+which(str_detect(movieDataFrame$TV, "TV"))
 
 movieDataFrame <- movieDataFrame[!is.na(movieDataFrame$NumberOfUsersRated),]
 dim(movieDataFrame)
 
 ########
 genres <- unique(c(as.character(movieDataFrame$Genre1),as.character(movieDataFrame$Genre2), as.character(movieDataFrame$Genre3)))
+genreslist <- (c(as.character(movieDataFrame$Genre1),as.character(movieDataFrame$Genre2), as.character(movieDataFrame$Genre3)))
 genres <- genres[!is.na(genres)]
 length(genres)
+table(genreslist)
 m <- matrix(0,nrow = nrow(movieDataFrame), ncol = length(genres))
 genres_df <- data.frame(m)
 names(genres_df) = genres
@@ -145,25 +150,24 @@ names <- setdiff(names(movieDataFrame), c("Language","ReleaseDate","Genre1","Gen
 movieDataFrame <- movieDataFrame[,names]
 names(movieDataFrame)
 
+########
+# Deal with MPAA
+table(movieDataFrame$MPAA)
+sum(is.na(movieDataFrame$MPAARating))
+
+movieDataFrame$RatingG <- 0
+movieDataFrame$RatingPG <- 0
+movieDataFrame$RatingR <- 0
+movieDataFrame$RatingNA <- 0
+movieDataFrame$RatingG[movieDataFrame$MPAARating == "G"] = 1
+movieDataFrame$RatingPG[movieDataFrame$MPAARating == "PG"] = 1
+movieDataFrame$RatingR[movieDataFrame$MPAARating == "R"] = 1
+movieDataFrame$RatingNA[is.na(movieDataFrame$MPAARating)] = 1
+
+movieDataFrame <- movieDataFrame[,setdiff(names(movieDataFrame), "MPAARating")]
+names(movieDataFrame)
+
 # make a new copy of the clean data
 movieDFClean <- movieDataFrame
 
-########
-# Deal with MPAA
-table(movieDFClean$MPAA)
-sum(is.na(movieDFClean$MPAARating))
-
-movieDFClean$RatingG <- 0
-movieDFClean$RatingPG <- 0
-movieDFClean$RatingR <- 0
-movieDFClean$RatingNA <- 0
-movieDFClean$RatingG[movieDFClean$MPAARating == "G"] = 1
-movieDFClean$RatingPG[movieDFClean$MPAARating == "PG"] = 1
-movieDFClean$RatingR[movieDFClean$MPAARating == "R"] = 1
-movieDFClean$RatingNA[is.na(movieDFClean$MPAARating)] = 1
-
-movieDFClean <- movieDFClean[,setdiff(names(movieDFClean), "MPAARating")]
-names(movieDFClean)
-
 save(movieDFClean, file = paste0(dataDir,"movieDFClean.RData"))
-
