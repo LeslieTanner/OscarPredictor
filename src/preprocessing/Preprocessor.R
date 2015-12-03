@@ -19,10 +19,15 @@ dataDir <- "~/Git/OscarPredictor/data/"
 load(file=paste0(dataDir,"movieData.RData"))
 load(file=paste0(dataDir,"actorData.RData"))
 load(file=paste0(dataDir,"mainPageData.RData"))
+load(file=paste0(dataDir,"cpi.RData"))
+load(file=paste0(dataDir,"FX_qrtly.RData"))
 
 ###########
 # Does what it says!
-addFactorColumns <- function(data, names, maxLevels = 8, minDensity = 0, NAValue = "NA"){
+addFactorColumns <- function(data, names, maxLevels, minDensity = 0, NAValue = "NA"){
+    
+    class(data) <- setdiff(class(data),"data.table")
+    
     for(name in names){
         data[[name]][is.na(data[[name]])] = "NA"
     }
@@ -59,8 +64,9 @@ addFactorColumns <- function(data, names, maxLevels = 8, minDensity = 0, NAValue
             }
         }
     }
-    
-    data <- data[,setdiff(names(data), names)]
+    names <- setdiff(names(data), names(levelCounts))
+    colIndices <- match(names, names(data))
+    data <- data[,colIndices]
     return(data)
 }
 
@@ -208,7 +214,11 @@ getYearSummary <- function(i){
     year = movieDataFrame$ReleaseYear[i]
     
     filmAppearances = sapply(urls, function(url) sum(actorData[[url]]$FilmYears < year))
-    return(list(MeanFilmAppearances = mean(filmAppearances), MaxFilmAppearances = max(filmAppearances)))
+    #allAppearances = sapply(urls, function(url) sum(actorData[[url]]$AllYears < year))
+    return(list(MeanFilmAppearances = mean(filmAppearances, na.rm = TRUE), 
+                MaxFilmAppearances = max(filmAppearances, na.rm = TRUE)))
+     #           MeanAllAppearances = mean(allAppearances, na.rm = TRUE), 
+     #            MaxAllAppearances = max(allAppearances, na.rm = TRUE)))
 }
 
 filmAppearances <- lapply(1:nrow(movieDataFrame), getYearSummary)
@@ -217,16 +227,25 @@ filmAppearances <- rbindlist(filmAppearances)
 dim(filmAppearances)
 names(filmAppearances)
 summary(filmAppearances)
-sum(filmAppearances$MaxFilmAppearances > 200)
+
+# inspect high values
+which(filmAppearances$MaxFilmAppearances > 200)
 movieDataFrame$MovieURL[filmAppearances$MaxFilmAppearances > 200]
+## turns out all this data is real, just tabulated differently e.g. for Mel Blanc
+# who starred in multiple episodes of Bugs Bunny in the 60's, each tabulated separately
 
 movieDataFrame <- cbind(movieDataFrame,filmAppearances)
 names(movieDataFrame)
 
 ########
 # Deal with MPAA
-table(movieDataFrame$MPAA)
+table(movieDataFrame$MPAA, useNA = "ifany")
 sum(is.na(movieDataFrame$MPAARating))
+
+# half the na values for ratings are for tv movies
+table(movieDataFrame$MPAARating, movieDataFrame$TV, useNA = "ifany")
+# every tv category gets oscars
+table(movieDataFrame$NumberOfOscars, movieDataFrame$TV, useNA = "ifany")
 
 movieDataFrame$RatingG <- 0
 movieDataFrame$RatingPG <- 0
@@ -244,19 +263,113 @@ movieDataFrame$RatingNA[is.na(movieDataFrame$MPAARating)] = 1
 
 ########
 # add TV factor columns
-
 table(movieDataFrame$TV,movieDataFrame$NumberOfOscars)
+movieDataFrame$isOnTV <- as.integer(!is.na(movieDataFrame$TV))
+summary(movieDataFrame$isOnTV)
+
+#######
+# convert currencies
+movieDataFrame$ReleaseDate
+dates <- movieDataFrame$ReleaseDate
+dates <- str_trim(str_replace(dates,"([^\n]+)\\n.*","\\1"))
+dates1 <- as.Date(strptime(dates, "%d %B %Y")) + 30
+dates2 <- as.Date(strptime(dates, "%B %Y")) + 30
+dates3 <- as.Date(strptime(dates, "%Y")) + 30
+dates1[is.na(dates1)] <- dates2[is.na(dates1)]
+dates1[is.na(dates1)] <- dates3[is.na(dates1)]
+
+quarters <- paste0(quarter(dates1),"Q ",year(dates1))
+length(quarters)
+typeof(quarters)
+
+unique(movieDataFrame$BoxOfficeGrossCurr)
+movieDataFrame$BoxOfficeGrossCurr[movieDataFrame$BoxOfficeGrossCurr == "£"] = "GBP"
+
+amounts <- sapply(1:length(quarters), function(i){
+    quarter = quarters[i]
+    curr = movieDataFrame$BoxOfficeGrossCurr[i]
+    amount = movieDataFrame$BoxOfficeGross[i]
+    if(!is.na(curr) & curr != "$"){
+        amount = amount/qrtly_rates[[curr]][qrtly_rates$Qtr == quarter]
+        amount = amount[1]
+    }
+    amount
+})
+
+hist(amounts)
+movieDataFrame$MovieTitle[which.max(amounts)]
+# Avatar
+
+BoxOfficeGross <- amounts
+
+unique(movieDataFrame$BoxOfficeOpeningWeekendCurr)
+movieDataFrame$BoxOfficeOpeningWeekendCurr[movieDataFrame$BoxOfficeOpeningWeekendCurr == "£"] = "GBP"
+
+amounts <- sapply(1:length(quarters), function(i){
+    quarter = quarters[i]
+    curr = movieDataFrame$BoxOfficeOpeningWeekendCurr[i]
+    amount = movieDataFrame$BoxOfficeOpeningWeekend[i]
+    if(!is.na(curr) & curr != "$"){
+        amount = amount/qrtly_rates[[curr]][qrtly_rates$Qtr == quarter]
+        amount = amount[1]
+    }
+    amount
+})
+
+hist(amounts)
+movieDataFrame$MovieTitle[which.max(amounts)]
+# The Avengers
+
+BoxOfficeOpeningWeekend <- amounts
+
+years <- year(as.Date(strptime(movieDataFrame$ReleaseYear, "%Y")) + 30)
+hist(years)
+
+inflation <- sapply(1:nrow(movieDataFrame), function(i) cpi$inflation[match(years[i],cpi$Year)])
+BoxOfficeOpeningWeekend <- BoxOfficeOpeningWeekend*inflation
+BoxOfficeGross <- BoxOfficeGross*inflation
+
+movieDataFrame$BoxOfficeGross2012 <- BoxOfficeGross
+movieDataFrame$BoxOfficeOpeningWeekend2012 <- BoxOfficeOpeningWeekend
+
+movieDataFrame$MovieTitle[order(BoxOfficeOpeningWeekend, decreasing = T)[1:10]]
+movieDataFrame$MovieTitle[order(BoxOfficeGross, decreasing = T)[1:10]]
+
+# months <- month(strptime(dates[1:10], "%d %B %Y"))
+# months2 <- month(strptime(dates[1:10], "%B %Y"))
+# years <- year(strptime(dates[1:10], "%d %B %Y"))
+# years2 <- year(strptime(dates[1:10], "%B %Y"))
+# years3 <- year(strptime(dates[1:10], "%Y"))
+# months[is.na(months)] = months2[is.na(months)]
+# years[is.na(years)] = years2[is.na(years)]
+# years[is.na(years)] = years3[is.na(years)]
+
+#######
+# add aspect ration factor
+aspectRatios <- str_replace_all(movieDataFrame$AspectRatio, "[\\s]+","")
+
+table(aspectRatios,useNA = "ifany")/nrow(movieDataFrame)
+
+sum(table(aspectRatios)/nrow(movieDataFrame) > .01)
+movieDataFrame <- addFactorColumns(movieDataFrame,names = "AspectRatio",minDensity = .01,
+                                    NAValue = "NA")
 
 #######
 # remove columns no longer needed: genres, starURLs, starIDs, starNames, directorID, directorName,directorURL
-names <- setdiff(names(movieDataFrame), c("Language","ReleaseDate","Genre1","Genre2","Genre3",
-                                          "DirectorName","DirectorID","DirectorURL",
+names(movieDataFrame)
+names <- setdiff(names(movieDataFrame), c("Language","ReleaseDate","ReleaseYear","Country",
+                                          "Genre1","Genre2","Genre3",
+                                          "DirectorName","MovieURL",
+                                          "DirectorID","DirectorURL",
                                           "Star1Name","Star1ID","Star1URL",
                                           "Star2Name","Star2ID","Star2URL",
-                                          "Star3Name","Star3ID","Star3URL","MPAARating"))
+                                          "Star3Name","Star3ID","Star3URL",
+                                          "MPAARating", "TV", 
+                                          "BoxOfficeBudget", "BoxOfficeBudgetCurr",
+                                          "BoxOfficeOpeningWeekend","BoxOfficeOpeningWeekendCurr",
+                                          "BoxOfficeGross","BoxOfficeGrossCurr"))
 movieDataFrame <- movieDataFrame[,names]
 names(movieDataFrame)
-
 
 #######################
 # make a new copy of the clean data and save
