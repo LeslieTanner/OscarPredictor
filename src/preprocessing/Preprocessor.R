@@ -15,60 +15,15 @@
 library(stringr)
 library(data.table)
 
-dataDir <- "~/Git/OscarPredictor/data/"
-load(file=paste0(dataDir,"movieData.RData"))
+dataDir <- "~/STAT6021/OscarProject/OscarPredictor/data/"
+load(file=paste0(dataDir,"movieCorrectOscar.RData"))  #Using Un-cleaned data that has correct Oscars!!!
 load(file=paste0(dataDir,"actorData.RData"))
 load(file=paste0(dataDir,"mainPageData.RData"))
 load(file=paste0(dataDir,"cpi.RData"))
 load(file=paste0(dataDir,"FX_qrtly.RData"))
 
-###########
-# Does what it says!
-addFactorColumns <- function(data, names, maxLevels, minDensity = 0, NAValue = "NA"){
-    
-    class(data) <- setdiff(class(data),"data.table")
-    
-    for(name in names){
-        data[[name]][is.na(data[[name]])] = "NA"
-    }
-    
-    # throw out factors with more than maxLevels, if specified
-    if(!missing(maxLevels)){
-        levelCounts <- lapply(names, function(name) length(unique(data[[name]])))
-        names(levelCounts) <- names
-        names <- setdiff(names, names(levelCounts)[levelCounts > maxLevels])
-    }
-    
-    # throw out levels with less than minDensity
-    if(minDensity != 0){
-        levelCounts <- lapply(names, function(name) table(data[[name]]))
-        names(levelCounts) <- names
-        levelCounts <- lapply(levelCounts, function(table) table/nrow(data))
-        levelCounts <- lapply(levelCounts, function(table) table[table > minDensity])
-    }
-    
-    # add the columns if there are any left
-    #####
-    if(length(levelCounts) > 0){
-        for(factorName in names(levelCounts)){
-            table = levelCounts[[factorName]]
-            for(levelName in names(table)){
-                level = table[[levelName]]
-                print(factorName)
-                print(levelName)
-                columnName = paste0(factorName,".",as.character(levelName))
-                print(columnName)
-                column <-  integer(nrow(data))
-                column[data[[factorName]] == levelName] = 1
-                data[[columnName]] = column
-            }
-        }
-    }
-    names <- setdiff(names(data), names(levelCounts))
-    colIndices <- match(names, names(data))
-    data <- data[,colIndices]
-    return(data)
-}
+
+names(movieDataFrame)
 
 ###########
 # Add movie titles
@@ -77,6 +32,64 @@ dim(mainPage)
 names(mainPage)
 movieDataFrame$MovieTitle = mainPage$MovieTitle
 names(movieDataFrame)
+
+
+###########
+# Rename columns for corrected number of Oscars
+names(movieDataFrame)[33] <- "Nominations"
+names(movieDataFrame)[35] <- "NumberOfOscars"
+names(movieDataFrame)
+
+
+
+###########
+# Does what it says!
+addFactorColumns <- function(data, names, maxLevels, minDensity = 0, NAValue = "NA"){
+  
+  class(data) <- setdiff(class(data),"data.table")
+  
+  for(name in names){
+    data[[name]][is.na(data[[name]])] = "NA"
+  }
+  
+  # throw out factors with more than maxLevels, if specified
+  if(!missing(maxLevels)){
+    levelCounts <- lapply(names, function(name) length(unique(data[[name]])))
+    names(levelCounts) <- names
+    names <- setdiff(names, names(levelCounts)[levelCounts > maxLevels])
+  }
+  
+  # throw out levels with less than minDensity
+  if(minDensity != 0){
+    levelCounts <- lapply(names, function(name) table(data[[name]]))
+    names(levelCounts) <- names
+    levelCounts <- lapply(levelCounts, function(table) table/nrow(data))
+    levelCounts <- lapply(levelCounts, function(table) table[table > minDensity])
+  }
+  
+  # add the columns if there are any left
+  #####
+  if(length(levelCounts) > 0){
+    for(factorName in names(levelCounts)){
+      table = levelCounts[[factorName]]
+      for(levelName in names(table)){
+        level = table[[levelName]]
+        print(factorName)
+        print(levelName)
+        columnName = paste0(factorName,".",as.character(levelName))
+        print(columnName)
+        column <-  integer(nrow(data))
+        column[data[[factorName]] == levelName] = 1
+        data[[columnName]] = column
+      }
+    }
+  }
+  names <- setdiff(names(data), names(levelCounts))
+  colIndices <- match(names, names(data))
+  data <- data[,colIndices]
+  return(data)
+}
+
 
 ########
 # Explotatory
@@ -193,12 +206,12 @@ names(genres_df) = genres
 # }
 
 for( i  in 1:nrow(movieDataFrame)){
-    g1 <- as.character(movieDataFrame$Genre1[i])
-    g2 <-  as.character(movieDataFrame$Genre2[i])
-    g3  <- as.character(movieDataFrame$Genre3[i])
-    if(!is.na(g1))  genres_df[i,g1] <-  1
-    if(!is.na(g2))  genres_df[i,g2] <-  1
-    if(!is.na(g3))  genres_df[i,g3] <-  1
+  g1 <- as.character(movieDataFrame$Genre1[i])
+  g2 <-  as.character(movieDataFrame$Genre2[i])
+  g3  <- as.character(movieDataFrame$Genre3[i])
+  if(!is.na(g1))  genres_df[i,g1] <-  1
+  if(!is.na(g2))  genres_df[i,g2] <-  1
+  if(!is.na(g3))  genres_df[i,g3] <-  1
 }
 
 movieDataFrame <- cbind(movieDataFrame,genres_df)
@@ -207,18 +220,18 @@ names(movieDataFrame)
 ########
 # Film and TV counts
 getYearSummary <- function(i){
-    url1 = movieDataFrame$Star1URL[i]
-    url2 = movieDataFrame$Star2URL[i]
-    url3 = movieDataFrame$Star3URL[i]
-    urls = c(url1,url2,url3)
-    year = movieDataFrame$ReleaseYear[i]
-    
-    filmAppearances = sapply(urls, function(url) sum(actorData[[url]]$FilmYears < year))
-    #allAppearances = sapply(urls, function(url) sum(actorData[[url]]$AllYears < year))
-    return(list(MeanFilmAppearances = mean(filmAppearances, na.rm = TRUE), 
-                MaxFilmAppearances = max(filmAppearances, na.rm = TRUE)))
-     #           MeanAllAppearances = mean(allAppearances, na.rm = TRUE), 
-     #            MaxAllAppearances = max(allAppearances, na.rm = TRUE)))
+  url1 = movieDataFrame$Star1URL[i]
+  url2 = movieDataFrame$Star2URL[i]
+  url3 = movieDataFrame$Star3URL[i]
+  urls = c(url1,url2,url3)
+  year = movieDataFrame$ReleaseYear[i]
+  
+  filmAppearances = sapply(urls, function(url) sum(actorData[[url]]$FilmYears < year))
+  #allAppearances = sapply(urls, function(url) sum(actorData[[url]]$AllYears < year))
+  return(list(MeanFilmAppearances = mean(filmAppearances, na.rm = TRUE), 
+              MaxFilmAppearances = max(filmAppearances, na.rm = TRUE)))
+  #           MeanAllAppearances = mean(allAppearances, na.rm = TRUE), 
+  #            MaxAllAppearances = max(allAppearances, na.rm = TRUE)))
 }
 
 filmAppearances <- lapply(1:nrow(movieDataFrame), getYearSummary)
@@ -283,17 +296,17 @@ length(quarters)
 typeof(quarters)
 
 unique(movieDataFrame$BoxOfficeGrossCurr)
-movieDataFrame$BoxOfficeGrossCurr[movieDataFrame$BoxOfficeGrossCurr == "Â£"] = "GBP"
+movieDataFrame$BoxOfficeGrossCurr[movieDataFrame$BoxOfficeGrossCurr == "£"] = "GBP"
 
 amounts <- sapply(1:length(quarters), function(i){
-    quarter = quarters[i]
-    curr = movieDataFrame$BoxOfficeGrossCurr[i]
-    amount = movieDataFrame$BoxOfficeGross[i]
-    if(!is.na(curr) & curr != "$"){
-        amount = amount/qrtly_rates[[curr]][qrtly_rates$Qtr == quarter]
-        amount = amount[1]
-    }
-    amount
+  quarter = quarters[i]
+  curr = movieDataFrame$BoxOfficeGrossCurr[i]
+  amount = movieDataFrame$BoxOfficeGross[i]
+  if(!is.na(curr) & curr != "$"){
+    amount = amount/qrtly_rates[[curr]][qrtly_rates$Qtr == quarter]
+    amount = amount[1]
+  }
+  amount
 })
 
 hist(amounts)
@@ -303,17 +316,17 @@ movieDataFrame$MovieTitle[which.max(amounts)]
 BoxOfficeGross <- amounts
 
 unique(movieDataFrame$BoxOfficeOpeningWeekendCurr)
-movieDataFrame$BoxOfficeOpeningWeekendCurr[movieDataFrame$BoxOfficeOpeningWeekendCurr == "Â£"] = "GBP"
+movieDataFrame$BoxOfficeOpeningWeekendCurr[movieDataFrame$BoxOfficeOpeningWeekendCurr == "£"] = "GBP"
 
 amounts <- sapply(1:length(quarters), function(i){
-    quarter = quarters[i]
-    curr = movieDataFrame$BoxOfficeOpeningWeekendCurr[i]
-    amount = movieDataFrame$BoxOfficeOpeningWeekend[i]
-    if(!is.na(curr) & curr != "$"){
-        amount = amount/qrtly_rates[[curr]][qrtly_rates$Qtr == quarter]
-        amount = amount[1]
-    }
-    amount
+  quarter = quarters[i]
+  curr = movieDataFrame$BoxOfficeOpeningWeekendCurr[i]
+  amount = movieDataFrame$BoxOfficeOpeningWeekend[i]
+  if(!is.na(curr) & curr != "$"){
+    amount = amount/qrtly_rates[[curr]][qrtly_rates$Qtr == quarter]
+    amount = amount[1]
+  }
+  amount
 })
 
 hist(amounts)
@@ -352,14 +365,14 @@ table(aspectRatios,useNA = "ifany")/nrow(movieDataFrame)
 
 sum(table(aspectRatios)/nrow(movieDataFrame) > .01)
 movieDataFrame <- addFactorColumns(movieDataFrame,names = "AspectRatio",minDensity = .01,
-                                    NAValue = "NA")
+                                   NAValue = "NA")
 
 #######
 # remove columns no longer needed: genres, starURLs, starIDs, starNames, directorID, directorName,directorURL
 names(movieDataFrame)
-names <- setdiff(names(movieDataFrame), c("Language","ReleaseDate","ReleaseYear","Country",
+names <- setdiff(names(movieDataFrame), c("Language", "Country",
                                           "Genre1","Genre2","Genre3",
-                                          "DirectorName","MovieURL",
+                                          "DirectorName",
                                           "DirectorID","DirectorURL",
                                           "Star1Name","Star1ID","Star1URL",
                                           "Star2Name","Star2ID","Star2URL",
@@ -371,8 +384,28 @@ names <- setdiff(names(movieDataFrame), c("Language","ReleaseDate","ReleaseYear"
 movieDataFrame <- movieDataFrame[,names]
 names(movieDataFrame)
 
+
+
+
+
 #######################
 # make a new copy of the clean data and save
 movieDFClean <- movieDataFrame
 
 save(movieDFClean, file = paste0(dataDir,"movieDFClean.RData"))
+
+
+
+
+# ##########  Now, we have run Corrected Oscar .RData through this preprocessor for cleaning.
+# par(mfrow = c(1,1))
+# barplot(table(movieDFClean$Nominations))
+# a <- aggregate(Nominations ~ ReleaseYear, data = movieDFClean, sum)
+# barplot(a$Nominations)
+# a
+# 
+# 
+# barplot(table(movieDFClean$NumberOfOscars))
+# a <- aggregate(NumberOfOscars ~ ReleaseYear, data = movieDFClean, sum)
+# barplot(a$NumberOfOscars)
+# a
