@@ -2,11 +2,11 @@
 # does the following:
 #x -incorporate 1 column of film counts and 1 column of TV counts for each of the top 3 stars.
 #x -set NA's to 0 for NumberOfCriticsRated
-#x -convert foreign currencies to USD
-#x -convert USD to inflation-adjusted 2012 USD
+# -convert foreign currencies to USD
+# -convert USD to inflation-adjusted 2015 USD
 #x -add 0-1 columns for specific factor values (genre, language(English/non)).
-#? -add interaction term columns for factors with few levels
-#x -remove factor columns which are too sparse
+# -add interaction term columns for factors with few levels
+# -remove factor columns which are too sparse
 #x -replace missing values of regressors with estimates where appropriate (number of critics)
 #x -replace missing values of regressors with NA strings where appropriate (i.e. for MPAA rating)
 #x -reduce movie data to complete cases
@@ -21,35 +21,30 @@ load(file=paste0(dataDir,"actorData.RData"))
 load(file=paste0(dataDir,"mainPageData.RData"))
 load(file=paste0(dataDir,"cpi.RData"))
 load(file=paste0(dataDir,"FX_qrtly.RData"))
-class(movieDataFrame) <- setdiff(class(movieDataFrame),"data.table")
 
 ###########
 # Does what it says!
-addFactorColumns <- function(data, names, maxLevels=20, minDensity = 0, NAValue = "NA"){
-    class <- class(data)
+addFactorColumns <- function(data, names, maxLevels, minDensity = 0, NAValue = "NA"){
     
-    if("data.table" %in% class(data)){
-        class(data) <- setdiff(class(data),"data.table")
-    }
+    class(data) <- setdiff(class(data),"data.table")
     
     for(name in names){
-        data[[name]][is.na(data[[name]])] = NAValue
-    }
-    
-    levelCounts <- lapply(names, function(name) table(data[[name]]))
-    names(levelCounts) <- names
-    
-    # throw out levels with less than minDensity
-    if(minDensity != 0){
-        levelCounts <- lapply(levelCounts, function(tables) tables/nrow(data))
-        levelCounts <- lapply(levelCounts, function(tables) tables[tables > minDensity])
+        data[[name]][is.na(data[[name]])] = "NA"
     }
     
     # throw out factors with more than maxLevels, if specified
     if(!missing(maxLevels)){
-        levelCounts2 <- sapply(names, function(name) length(levelCounts[[name]]))
-        names(levelCounts2) <- names
-        names <- setdiff(names, names(levelCounts2)[levelCounts2 > maxLevels])
+        levelCounts <- lapply(names, function(name) length(unique(data[[name]])))
+        names(levelCounts) <- names
+        names <- setdiff(names, names(levelCounts)[levelCounts > maxLevels])
+    }
+    
+    # throw out levels with less than minDensity
+    if(minDensity != 0){
+        levelCounts <- lapply(names, function(name) table(data[[name]]))
+        names(levelCounts) <- names
+        levelCounts <- lapply(levelCounts, function(table) table/nrow(data))
+        levelCounts <- lapply(levelCounts, function(table) table[table > minDensity])
     }
     
     # add the columns if there are any left
@@ -70,8 +65,8 @@ addFactorColumns <- function(data, names, maxLevels=20, minDensity = 0, NAValue 
         }
     }
     names <- setdiff(names(data), names(levelCounts))
-    data <- data[,names]
-    if("data.table" %in% class){ class(data) <- class }
+    colIndices <- match(names, names(data))
+    data <- data[,colIndices]
     return(data)
 }
 
@@ -80,12 +75,11 @@ addFactorColumns <- function(data, names, maxLevels=20, minDensity = 0, NAValue 
 dim(movieDataFrame)
 dim(mainPage)
 names(mainPage)
-sum(movieDataFrame$MovieURL == as.character(mainPage$MovieURL))
-movieDataFrame$MovieTitle = (mainPage$MovieTitle)
+movieDataFrame$MovieTitle = mainPage$MovieTitle
 names(movieDataFrame)
 
 ########
-# Exploratory
+# Explotatory
 summary(movieDataFrame)
 
 hist(movieDataFrame$DurationMins, xlim = c(0,480), breaks = 300)
@@ -150,28 +144,31 @@ summary(movieDataFrame$NumberOfCriticsRated)
 # replace missing values of IMDBRating and NumberOfUsersRated
 par(mfrow = c(1,2))
 hist(movieDataFrame$NumberOfUsersRated)
-# median = median(movieDataFrame$NumberOfUsersRated, na.rm = TRUE)
-# median
-# movieDataFrame$NumberOfUsersRated[is.na(movieDataFrame$NumberOfUsersRated)] = median
-# summary(movieDataFrame$NumberOfUsersRated)
+median = median(movieDataFrame$NumberOfUsersRated, na.rm = TRUE)
+median
+movieDataFrame$NumberOfUsersRated[is.na(movieDataFrame$NumberOfUsersRated)] = median
+summary(movieDataFrame$NumberOfUsersRated)
 
 hist(movieDataFrame$IMDBRating)
-# median = median(movieDataFrame$IMDBRating, na.rm = TRUE)
-# median
-# movieDataFrame$IMDBRating[is.na(movieDataFrame$IMDBRating)] = median
-# summary(movieDataFrame$IMDBRating)
+median = median(movieDataFrame$IMDBRating, na.rm = TRUE)
+median
+movieDataFrame$IMDBRating[is.na(movieDataFrame$IMDBRating)] = median
+summary(movieDataFrame$IMDBRating)
 
-movieDataFrame$MovieURL[which(is.na(movieDataFrame$NumberOfUsersRated))]
-# replace manually
-numberOfUsers <- c(177,305,21,269,652,53,36,1248,170,143,
-                   270,112,15,207,41,126,57,68,28,130,
-                   236,128,85,104,25,NA,163,147,109,333)
-which(is.na(movieDataFrame$NumberOfUsersRated))
-movieDataFrame$MovieTitle[(is.na(movieDataFrame$NumberOfUsersRated))]
-movieDataFrame$MovieURL[(is.na(movieDataFrame$NumberOfUsersRated))]
-movieDataFrame$NumberOfUsersRated[(is.na(movieDataFrame$NumberOfUsersRated))] <- numberOfUsers
-movieDataFrame <- movieDataFrame[!is.na(movieDataFrame$NumberOfUsersRated),]
-dim(movieDataFrame)
+# # Basically, throw out a bunch of TV trash
+# sum(is.na(movieDataFrame$NumberOfUsersRated) & !is.na(movieDataFrame$IMDBRating))
+# summary(movieDataFrame$NumberOfUsersRated)
+# summary(movieDataFrame$IMDBRating)
+# movieDataFrame$TV[is.na(movieDataFrame$NumberOfUsersRated) & !is.na(movieDataFrame$IMDBRating)]
+# 
+# missingratings <- which(is.na(movieDataFrame$NumberOfUsersRated) & !is.na(movieDataFrame$IMDBRating))
+# tv <- which(str_detect(movieDataFrame$TV, "TV"))
+# missingratings
+# tv
+# setdiff(missingratings,tv)
+# 
+# movieDataFrame <- movieDataFrame[!is.na(movieDataFrame$NumberOfUsersRated),]
+# dim(movieDataFrame)
 
 ########
 genres <- unique(c(as.character(movieDataFrame$Genre1),as.character(movieDataFrame$Genre2), as.character(movieDataFrame$Genre3)))
@@ -216,18 +213,17 @@ getYearSummary <- function(i){
     urls = c(url1,url2,url3)
     year = movieDataFrame$ReleaseYear[i]
     
-    filmAppearances = sapply(urls, function(url) sum(actorData[[url]]$AllYears < year) - sum(actorData[[url]]$TVMultiYears < year))
-    allAppearances = sapply(urls, function(url) sum(actorData[[url]]$AllYears < year))
+    filmAppearances = sapply(urls, function(url) sum(actorData[[url]]$FilmYears < year))
+    #allAppearances = sapply(urls, function(url) sum(actorData[[url]]$AllYears < year))
     return(list(MeanFilmAppearances = mean(filmAppearances, na.rm = TRUE), 
-                MaxFilmAppearances = max(filmAppearances, na.rm = TRUE),
-                MeanAllAppearances = mean(allAppearances, na.rm = TRUE), 
-                MaxAllAppearances = max(allAppearances, na.rm = TRUE)))
+                MaxFilmAppearances = max(filmAppearances, na.rm = TRUE)))
+     #           MeanAllAppearances = mean(allAppearances, na.rm = TRUE), 
+     #            MaxAllAppearances = max(allAppearances, na.rm = TRUE)))
 }
 
 filmAppearances <- lapply(1:nrow(movieDataFrame), getYearSummary)
 length(filmAppearances)
 filmAppearances <- rbindlist(filmAppearances)
-class(filmAppearances) <- setdiff(class(filmAppearances),"data.table")
 dim(filmAppearances)
 names(filmAppearances)
 summary(filmAppearances)
@@ -235,13 +231,11 @@ summary(filmAppearances)
 # inspect high values
 which(filmAppearances$MaxFilmAppearances > 200)
 movieDataFrame$MovieURL[filmAppearances$MaxFilmAppearances > 200]
-movieDataFrame$Star1Name[filmAppearances$MaxFilmAppearances > 200]
 ## turns out all this data is real, just tabulated differently e.g. for Mel Blanc
 # who starred in multiple episodes of Bugs Bunny in the 60's, each tabulated separately
 
 movieDataFrame <- cbind(movieDataFrame,filmAppearances)
 names(movieDataFrame)
-dim(movieDataFrame)
 
 ########
 # Deal with MPAA
@@ -253,21 +247,19 @@ table(movieDataFrame$MPAARating, movieDataFrame$TV, useNA = "ifany")
 # every tv category gets oscars
 table(movieDataFrame$NumberOfOscars, movieDataFrame$TV, useNA = "ifany")
 
-# movieDataFrame$RatingG <- 0
-# movieDataFrame$RatingPG <- 0
-# movieDataFrame$RatingR <- 0
-# movieDataFrame$RatingNC17 <- 0
-# movieDataFrame$RatingNA <- 0
-# 
-# movieDataFrame$RatingG[movieDataFrame$MPAARating == "G"] = 1
-# movieDataFrame$RatingPG[movieDataFrame$MPAARating == "PG"] = 1
-# movieDataFrame$RatingPG13[movieDataFrame$MPAARating == "PG-13"] = 1
-# movieDataFrame$RatingR[movieDataFrame$MPAARating == "R"] = 1
-# movieDataFrame$RatingNC17[movieDataFrame$MPAARating == "NC-17"] = 1
-# movieDataFrame$RatingNA[is.na(movieDataFrame$MPAARating)] = 1
+movieDataFrame$RatingG <- 0
+movieDataFrame$RatingPG <- 0
+movieDataFrame$RatingR <- 0
+movieDataFrame$RatingNC17 <- 0
+movieDataFrame$RatingNA <- 0
 
-movieDataFrame <- addFactorColumns(movieDataFrame,names = c("MPAARating"),maxLevels = 100,minDensity = 0)
-dim(movieDataFrame)
+movieDataFrame$RatingG[movieDataFrame$MPAARating == "G"] = 1
+movieDataFrame$RatingPG[movieDataFrame$MPAARating == "PG"] = 1
+movieDataFrame$RatingPG13[movieDataFrame$MPAARating == "PG-13"] = 1
+movieDataFrame$RatingR[movieDataFrame$MPAARating == "R"] = 1
+movieDataFrame$RatingNC17[movieDataFrame$MPAARating == "NC-17"] = 1
+movieDataFrame$RatingNA[is.na(movieDataFrame$MPAARating)] = 1
+
 
 ########
 # add TV factor columns
@@ -280,7 +272,6 @@ summary(movieDataFrame$isOnTV)
 movieDataFrame$ReleaseDate
 dates <- movieDataFrame$ReleaseDate
 dates <- str_trim(str_replace(dates,"([^\n]+)\\n.*","\\1"))
-
 dates1 <- as.Date(strptime(dates, "%d %B %Y")) + 30
 dates2 <- as.Date(strptime(dates, "%B %Y")) + 30
 dates3 <- as.Date(strptime(dates, "%Y")) + 30
@@ -352,33 +343,9 @@ movieDataFrame$MovieTitle[order(BoxOfficeGross, decreasing = T)[1:10]]
 # months[is.na(months)] = months2[is.na(months)]
 # years[is.na(years)] = years2[is.na(years)]
 # years[is.na(years)] = years3[is.na(years)]
-names(movieDataFrame)
 
 #######
-# add release month or quarter factors
-dates <- movieDataFrame$ReleaseDate
-dates <- str_trim(str_replace(dates,"([^\n]+)\\n.*","\\1"))
-
-dates1 <- as.Date(strptime(dates, "%d %B %Y"))
-dates2 <- as.Date(strptime(dates, "%B %Y"))
-dates3 <- as.Date(strptime(dates, "%Y"))
-dates1[is.na(dates1)] <- dates2[is.na(dates1)]
-dates1[is.na(dates1)] <- dates3[is.na(dates1)]
-
-months <- month(dates1)
-quarters <- quarter(dates1)
-
-movieDataFrame$ReleaseMonth = months
-movieDataFrame$ReleaseQuarter = quarters
-
-table(movieDataFrame$ReleaseMonth, movieDataFrame$numberOfOscarsWon)
-table(quarters, movieDataFrame$numberOfOscarsWon)
-
-movieDataFrame$releaseQuarter <- quarters
-movieDataFrame <- addFactorColumns()
-
-#######
-# add aspect ratio factor
+# add aspect ration factor
 aspectRatios <- str_replace_all(movieDataFrame$AspectRatio, "[\\s]+","")
 
 table(aspectRatios,useNA = "ifany")/nrow(movieDataFrame)
