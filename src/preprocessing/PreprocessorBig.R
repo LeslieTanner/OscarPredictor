@@ -24,6 +24,8 @@ load(file=paste0(dataDir,"FX_qrtly.RData"))
 class(movieDataFrame) <- setdiff(class(movieDataFrame),"data.table")
 
 ###########
+# Functions
+
 # Does what it says!
 addFactorColumns <- function(data, names, maxLevels=20, minDensity = 0, NAValue = "NA"){
     class <- class(data)
@@ -33,6 +35,7 @@ addFactorColumns <- function(data, names, maxLevels=20, minDensity = 0, NAValue 
     }
     
     for(name in names){
+        data[[name]] <- as.character(data[[name]])
         data[[name]][is.na(data[[name]])] = NAValue
     }
     
@@ -53,7 +56,6 @@ addFactorColumns <- function(data, names, maxLevels=20, minDensity = 0, NAValue 
     }
     
     # add the columns if there are any left
-    #####
     if(length(levelCounts) > 0){
         for(factorName in names(levelCounts)){
             table = levelCounts[[factorName]]
@@ -75,6 +77,30 @@ addFactorColumns <- function(data, names, maxLevels=20, minDensity = 0, NAValue 
     return(data)
 }
 
+addInteractionTerms <- function(data, names, minDensity = 0){
+    class <- class(data)
+    
+    if("data.table" %in% class(data)){
+        class(data) <- setdiff(class(data),"data.table")
+    }
+    
+    bool <- unlist(lapply(data[,names], function(column) is.numeric(column)))
+    names <- names[bool]
+    n = nrow(data)
+    
+    for(i in 1:(length(names) - 1)){
+        for(j in (i+1):length(names)){
+            column = data[[names[i]]]*data[[names[j]]]
+            if(sum(column > 0, na.rm = TRUE)/n > minDensity){
+                data[[paste0(names[i],".",names[j])]] <- column
+            }
+        }
+    }
+    if("data.table" %in% class){ class(data) <- class }
+    return(data)
+}
+
+
 ###########
 # Add movie titles
 dim(movieDataFrame)
@@ -83,6 +109,8 @@ names(mainPage)
 sum(movieDataFrame$MovieURL == as.character(mainPage$MovieURL))
 movieDataFrame$MovieTitle = (mainPage$MovieTitle)
 names(movieDataFrame)
+
+movieDataFrame <- data.frame(movieDataFrame, stringsAsFactors = FALSE)
 
 ########
 # Exploratory
@@ -293,6 +321,8 @@ typeof(quarters)
 
 unique(movieDataFrame$BoxOfficeGrossCurr)
 movieDataFrame$BoxOfficeGrossCurr[movieDataFrame$BoxOfficeGrossCurr == "£"] = "GBP"
+movieDataFrame$BoxOfficeBudgetCurr[movieDataFrame$BoxOfficeBudgetCurr == "£"] = "GBP"
+movieDataFrame$BoxOfficeBudgetCurr[movieDataFrame$BoxOfficeBudgetCurr == "€"] = "EUR"
 
 amounts <- sapply(1:length(quarters), function(i){
     quarter = quarters[i]
@@ -331,18 +361,35 @@ movieDataFrame$MovieTitle[which.max(amounts)]
 
 BoxOfficeOpeningWeekend <- amounts
 
+
+amounts <- sapply(1:length(quarters), function(i){
+    quarter = quarters[i]
+    curr = movieDataFrame$BoxOfficeBudgetCurr[i]
+    amount = movieDataFrame$BoxOfficeBudget[i]
+    if(!is.na(curr) & curr != "$"){
+        amount = amount/qrtly_rates[[curr]][qrtly_rates$Qtr == quarter]
+        amount = amount[1]
+    }
+    amount
+})
+
+BoxOfficeBudget <- amounts
+
 years <- year(as.Date(strptime(movieDataFrame$ReleaseYear, "%Y")) + 30)
 hist(years)
 
 inflation <- sapply(1:nrow(movieDataFrame), function(i) cpi$inflation[match(years[i],cpi$Year)])
 BoxOfficeOpeningWeekend <- BoxOfficeOpeningWeekend*inflation
 BoxOfficeGross <- BoxOfficeGross*inflation
+BoxOfficeBudget <- BoxOfficeBudget*inflation
 
 movieDataFrame$BoxOfficeGross2012 <- BoxOfficeGross
 movieDataFrame$BoxOfficeOpeningWeekend2012 <- BoxOfficeOpeningWeekend
+movieDataFrame$BoxOfficeBudget2012 <- BoxOfficeBudget
 
 movieDataFrame$MovieTitle[order(BoxOfficeOpeningWeekend, decreasing = T)[1:10]]
 movieDataFrame$MovieTitle[order(BoxOfficeGross, decreasing = T)[1:10]]
+movieDataFrame$MovieTitle[order(BoxOfficeBudget, decreasing = T)[1:10]]
 
 # months <- month(strptime(dates[1:10], "%d %B %Y"))
 # months2 <- month(strptime(dates[1:10], "%B %Y"))
@@ -370,12 +417,31 @@ quarters <- quarter(dates1)
 
 movieDataFrame$ReleaseMonth = months
 movieDataFrame$ReleaseQuarter = quarters
+# This puts Q1 = 3:5, Q2 = 6:8, Q3 = 9:11.  We should exclude rows in Q1 when regressing 
+# oscars on gross, since this would not be known at the time of the oscars.
+offsetquarters <- floor((months - 3)/3) + 1
+offsetquarters[offsetquarters == 0] = 4
+unique(offsetquarters)
+movieDataFrame$ReleaseQuarterOffset = offsetquarters
 
-table(movieDataFrame$ReleaseMonth, movieDataFrame$numberOfOscarsWon)
-table(quarters, movieDataFrame$numberOfOscarsWon)
+names(movieDataFrame)
+summary(movieDataFrame$ReleaseYear)
+summary(movieDataFrame$ReleaseMonth)
+summary(movieDataFrame$ReleaseQuarter)
+summary(movieDataFrame$ReleaseQuarterOffset)
 
-movieDataFrame$releaseQuarter <- quarters
-movieDataFrame <- addFactorColumns()
+oscarsByMonth <- table(movieDataFrame$ReleaseMonth, movieDataFrame$NumberOfOscars, useNA = "ifany")
+oscarsByQuarter <- table(movieDataFrame$ReleaseQuarter, movieDataFrame$NumberOfOscars, useNA = "ifany")
+oscarsByQuarterOffset <- table(movieDataFrame$ReleaseQuarterOffset, movieDataFrame$NumberOfOscars, useNA = "ifany")
+oscarsByMonth/rowSums(oscarsByMonth)
+oscarsByQuarter/rowSums(oscarsByQuarter)
+oscarsByQuarterOffset/rowSums(oscarsByQuarterOffset)
+
+dim(movieDataFrame)
+
+# Add quarter factors
+movieDataFrame <- addFactorColumns(movieDataFrame, names = c("ReleaseQuarter","ReleaseQuarterOffset"),maxLevels = 12,
+                                        minDensity = .05,NAValue = "NA")
 
 #######
 # add aspect ratio factor
@@ -386,6 +452,21 @@ table(aspectRatios,useNA = "ifany")/nrow(movieDataFrame)
 sum(table(aspectRatios)/nrow(movieDataFrame) > .01)
 movieDataFrame <- addFactorColumns(movieDataFrame,names = "AspectRatio",minDensity = .01,
                                     NAValue = "NA")
+
+#######
+# Add interaction terms between:
+# IsOnTV, MPAARating, AspectRatio, ReleaseQuarterOffset?
+# TV-Rating, Quarter-Rating, Aspect-Rating, TV-Quarter
+table <- table(movieDataFrame$isOnTV,movieDataFrame$)
+table/rowSums(table)
+
+names = str_detect(names(movieDataFrame),"MPAA|QuarterOffset|OnTV|Aspect")
+names = names(movieDataFrame)[names]
+movieDataFrame <- addInteractionTerms(movieDataFrame, names, minDensity = .05)
+
+#######
+# Add a binary response for oscars
+movieDataFrame$WonOscar <- as.integer(movieDataFrame$NumberOfOscars > 0)
 
 #######
 # remove columns no longer needed: genres, starURLs, starIDs, starNames, directorID, directorName,directorURL
@@ -406,6 +487,6 @@ names(movieDataFrame)
 
 #######################
 # make a new copy of the clean data and save
-movieDFClean <- movieDataFrame
+movieDFCleanBig <- movieDataFrame
 
-save(movieDFClean, file = paste0(dataDir,"movieDFClean.RData"))
+save(movieDFCleanBig, file = paste0(dataDir,"movieDFCleanBig.RData"))
