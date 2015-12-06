@@ -179,3 +179,20 @@ testData$predictions <- predictions
 testData <- testData[order(testData$predictions,decreasing=TRUE),]
 testData[1:15,c("MovieTitle","predictions")]
 
+#######
+# Legit regressors
+
+response = "WonOscar"
+namesSignifFullModel3 <- setdiff(namesSignifFullModel2,c("IMDBRating","NumberOfUsersRated"))
+signifFullModelFormula3 <- as.formula(paste0(response," ~ `",paste0(namesSignifFullModel3, collapse = "` + `"),'`'))
+
+
+signifFullModel3<- glm(signifFullModelFormula3,data=movieDFClean,family="binomial")
+summary(signifFullModel3)
+F1Score(trainData,testData,namesSignifFullModel3,response, threshold = 0.6)
+# Predictions for Oscars in 2012
+predictions <- predict(signifFullModel3,newdata=testData,type="response")
+
+testData$predictions <- predictions
+testData <- testData[order(testData$predictions,decreasing=TRUE),]
+testData[1:15,c("MovieTitle","predictions")]
