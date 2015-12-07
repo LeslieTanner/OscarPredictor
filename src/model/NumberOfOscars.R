@@ -180,7 +180,7 @@ predictions <- predict(signifFullModel2,newdata=testData,type="response")
 
 testData$predictions <- predictions
 testData <- testData[order(testData$predictions,decreasing=TRUE),]
-testData[1:15,c("MovieTitle","predictions")]
+testData[1:20,c("MovieTitle","predictions")]
 
 testData$binaryPrediction <- ifelse(testData$predictions>=0.5,1,0)
 testData$TN <- ifelse(testData$WonOscar==0 & testData$binaryPrediction==0, 1, 0)
@@ -215,7 +215,7 @@ predictions <- predict(signifFullModel3,newdata=testData,type="response")
 
 testData$predictions <- predictions
 testData <- testData[order(testData$predictions,decreasing=TRUE),]
-testData[1:15,c("MovieTitle","predictions")]
+testData[1:20,c("MovieTitle","predictions")]
 
 testData$binaryPrediction <- ifelse(testData$predictions>=0.5,1,0)
 testData$TN <- ifelse(testData$WonOscar==0 & testData$binaryPrediction==0, 1, 0)
@@ -233,4 +233,15 @@ Recall = sum(testData$TP)/(sum(testData$TP)+sum(testData$FN))
 # 0.5833333
 Accuracy = (sum(testData$TP) + sum(testData$TN))/(sum(testData$TP)+sum(testData$FP)+sum(testData$TN)+sum(testData$FN))
 #  0.9396552
+
+
+##############
+# Compare with Actual Oscar Winners of 2012.  See what our prediction was for actual winners:
+winners2012 <- c("Lincoln", "Les Misérables", "Django Unchained", "Zero Dark Thirty", "Skyfall",
+                 "Argo", "Silver Linings Playbook", "Amour", "Life of Pi", "Anna Karenina", "Brave",
+                 "Curfew", "Inocente", "Paper Man", "Searching for Sugar Man")
+
+# which(testData$MovieTitle == winners2012[1])
+
+testData[c(1,3,4,5,7,8,13,17,19,27,33,49), c("MovieTitle", "predictions")]
 
