@@ -113,6 +113,8 @@ res.dev #0.2156
 p <- fullModel$deviance / qchisq(0.975,fullModel$df.residual)
 p #0.2063
 
+# Given that the ratio of deviance/df is not close to unity although the p-value is higher than 0.05, we do have cause to question the adequacy of the model
+
 
 #######
 # Extract Significant regressors from full model + OpeningWeekend2012
@@ -139,6 +141,8 @@ res.dev #0.2276
 
 p <- signifFullModel$deviance / qchisq(0.975,signifFullModel$df.residual)
 p #0.2179
+
+# Given that the ratio of deviance/df is not close to unity although the p-value is higher than 0.05, we do have cause to question the adequacy of the model
 
 
 ###########
@@ -168,8 +172,7 @@ res.dev #0.2281
 p <- signifFullModel2$deviance / qchisq(0.975,signifFullModel2$df.residual)
 p #0.2183
 
-# Given that the ratio of deviance/df is not close to unity although the p-value is higher than 0.05, 
-# we do have cause to question the adequacy of the model
+# Given that the ratio of deviance/df is not close to unity although the p-value is higher than 0.05, we do have cause to question the adequacy of the model
 
 #######
 # Predictions for Oscars in 2012
@@ -178,6 +181,23 @@ predictions <- predict(signifFullModel2,newdata=testData,type="response")
 testData$predictions <- predictions
 testData <- testData[order(testData$predictions,decreasing=TRUE),]
 testData[1:15,c("MovieTitle","predictions")]
+
+testData$binaryPrediction <- ifelse(testData$predictions>=0.5,1,0)
+testData$TN <- ifelse(testData$WonOscar==0 & testData$binaryPrediction==0, 1, 0)
+testData$FP <- ifelse(testData$WonOscar==0 & testData$binaryPrediction==1, 1, 0)
+testData$FN <- ifelse(testData$WonOscar==1 & testData$binaryPrediction==0, 1, 0)
+testData$TP <- ifelse(testData$WonOscar==1 & testData$binaryPrediction==1, 1, 0)
+sum(testData$TN) #215
+sum(testData$FN) #2
+sum(testData$TP) #10
+sum(testData$FP) #5
+      
+Precision = sum(testData$TP)/(sum(testData$TP)+sum(testData$FP))
+# 0.6666667
+Recall = sum(testData$TP)/(sum(testData$TP)+sum(testData$FN))
+# 0.8333333
+Accuracy = (sum(testData$TP) + sum(testData$TN))/(sum(testData$TP)+sum(testData$FP)+sum(testData$TN)+sum(testData$FN))
+#  0.9698276
 
 #######
 # Legit regressors
@@ -196,3 +216,21 @@ predictions <- predict(signifFullModel3,newdata=testData,type="response")
 testData$predictions <- predictions
 testData <- testData[order(testData$predictions,decreasing=TRUE),]
 testData[1:15,c("MovieTitle","predictions")]
+
+testData$binaryPrediction <- ifelse(testData$predictions>=0.5,1,0)
+testData$TN <- ifelse(testData$WonOscar==0 & testData$binaryPrediction==0, 1, 0)
+testData$FP <- ifelse(testData$WonOscar==0 & testData$binaryPrediction==1, 1, 0)
+testData$FN <- ifelse(testData$WonOscar==1 & testData$binaryPrediction==0, 1, 0)
+testData$TP <- ifelse(testData$WonOscar==1 & testData$binaryPrediction==1, 1, 0)
+sum(testData$TN) #211
+sum(testData$FN) #5
+sum(testData$TP) #7
+sum(testData$FP) #9
+
+Precision = sum(testData$TP)/(sum(testData$TP)+sum(testData$FP))
+# 0.4375
+Recall = sum(testData$TP)/(sum(testData$TP)+sum(testData$FN))
+# 0.5833333
+Accuracy = (sum(testData$TP) + sum(testData$TN))/(sum(testData$TP)+sum(testData$FP)+sum(testData$TN)+sum(testData$FN))
+#  0.9396552
+
