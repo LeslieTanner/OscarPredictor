@@ -1,74 +1,83 @@
-<!DOCTYPE html>
+<!doctype html>
+<!-- The Time Machine GitHub pages theme was designed and developed by Jon Rohan, on Feb 7, 2012. -->
+<!-- Follow him for fun. http://twitter.com/jonrohan. Tail his code on https://github.com/jonrohan -->
 <html>
-  <head>
-    <meta charset='utf-8'>
-    <meta http-equiv="X-UA-Compatible" content="chrome=1">
-    <link href='https://fonts.googleapis.com/css?family=Chivo:900' rel='stylesheet' type='text/css'>
-    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen">
-    <link rel="stylesheet" type="text/css" href="stylesheets/github-dark.css" media="screen">
-    <link rel="stylesheet" type="text/css" href="stylesheets/print.css" media="print">
-    <!--[if lt IE 9]>
-    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
-    <![endif]-->
-    <title>OscarPredictor by nm1291</title>
-  </head>
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
 
-  <body>
+  <link rel="stylesheet" href="stylesheets/stylesheet.css" media="screen">
+  <link rel="stylesheet" href="stylesheets/github-dark.css">
+  <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+  <script type="text/javascript" src="javascripts/script.js"></script>
+
+  <title>OscarPredictor</title>
+  <meta name="description" content="Using linear models to predict the Oscars">
+
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+
+</head>
+
+<body>
+
+  <div class="wrapper">
+    <header>
+      <h1 class="title">OscarPredictor</h1>
+    </header>
     <div id="container">
-      <div class="inner">
-
-        <header>
-          <h1>OscarPredictor</h1>
-          <h2>Using linear models to predict the Oscars</h2>
-        </header>
-
-        <section id="downloads" class="clearfix">
-          <a href="https://github.com/nm1291/OscarPredictor/zipball/master" id="download-zip" class="button"><span>Download .zip</span></a>
-          <a href="https://github.com/nm1291/OscarPredictor/tarball/master" id="download-tar-gz" class="button"><span>Download .tar.gz</span></a>
-          <a href="https://github.com/nm1291/OscarPredictor" id="view-on-github" class="button"><span>View on GitHub</span></a>
-        </section>
-
-        <hr>
-
-        <section id="main_content">
+      <p class="tagline">Using linear models to predict the Oscars</p>
+      <div id="main" role="main">
+        <div class="download-bar">
+        <div class="inner">
+          <a href="https://github.com/nm1291/OscarPredictor/tarball/master" class="download-button tar"><span>Download</span></a>
+          <a href="https://github.com/nm1291/OscarPredictor/zipball/master" class="download-button zip"><span>Download</span></a>
+          <a href="https://github.com/nm1291/OscarPredictor" class="code">View OscarPredictor on GitHub</a>
+        </div>
+        <span class="blc"></span><span class="trc"></span>
+        </div>
+        <article class="markdown-body">
           <h3>
 <a id="summary" class="anchor" href="#summary" aria-hidden="true"><span class="octicon octicon-link"></span></a>Summary.</h3>
 
-<p>revenues and another to predict if a movie would win an Oscar.
-Our first model attempted to predict Box Office Gross Revenues (in 2012 USD) using multiple linear
-regression. Our approach was to fit a model using all regressor variables and assess it by looking the
-significance of variables based on partial t-tests of significance (p&lt;0.05) and residual analysis. Through
-several iterations, we created several models in which non-significant variables were removed and the
-response variable was transformed in order to improve the normality of the residuals (log, square root,
-cube root and fourth root). Our final model contained 14 significant regressor variables and the fourth
-root of the response. We would not recommend use of a linear regression for prediction purposes as we
-were only able to achieve an R2 of 0. 0.446 and RMSE which is approximately two-thirds the standard
-deviation of the response.
-Our second model attempted to predict whether 2012 films would receive an Oscar using multiple logistic
-regression of a binary response. Similar to our approach with the first model, we started with all regressor
-variables to build a logistic regression model but this time we assessed it not only on the tests of
-significance of the variables (p&lt;0.05), but also using an F1 test and model deviance. An F1 test employs
-precision and recall and is a more balanced evaluation for our model than raw accuracy, due to the
-number of movies with zero Oscars greatly exceeding the number of movies with an Oscar. In our final
-model, all variables were significant and showed an F1 score of 0.72 (threshold = 0.6) which was
-significantly higher than our first model; none of our models performed well in terms of model deviance,
-as none showed a ratio near unity. Finally we, removed to regressor variables which reflected information
-not available at the time the Oscar was awarded, i.e., future information; in this model, the F1 score
-dropped to 0.52 (threshold = 0.6).</p>
+<p>Executive Summary
+Our overall goal for this project was to create two linear models: one which would predict the Box Office gross of a film and another which would predict if a film would win an Oscar. We spent a considerable amount of time collecting and preparing data for use in our models. We collected film data, actor data, exchange rate data and inflation data from various websites. Most variables required some adjustment in order to be useful in our models, be it conversion to a factor, imputation of missing values, removal of missing values, standardization to one currency and level of purchasing power, etc. Additionally, in order to deal with non-linearity of data, we performed transformation of some variables, such as squaring numerical variables (actor film appearances, ratings, duration) in an attempt to model nonlinearity in the response variable. We only used complete cases in our models. Our goal was to build two models, one to predict movie revenues and another to predict if a movie would win an Oscar.
+Our first model attempted to predict Box Office Gross Revenues (in 2012 USD) using multiple linear regression. Our approach was to fit a model using all regressor variables and assess it by looking the significance of variables based on partial t-tests of significance (p&lt;0.05) and residual analysis. Through several iterations, we created several models in which non-significant variables were removed and the response variable was transformed in order to improve the normality of the residuals (log, square root, cube root and fourth root). Our final model contained 14 significant regressor variables and the fourth root of the response. We would not recommend use of a linear regression for prediction purposes as we were only able to achieve an R2 of 0. 0.446 and RMSE which is approximately two-thirds the standard deviation of the response.
+Our second model attempted to predict whether 2012 films would receive an Oscar using multiple logistic regression of a binary response. Similar to our approach with the first model, we started with all regressor variables to build a logistic regression model but this time we assessed it not only on the tests of significance of the variables (p&lt;0.05), but also using an F1 test and model deviance. An F1 test employs precision and recall and is a more balanced evaluation for our model than raw accuracy, due to the number of movies with zero Oscars greatly exceeding the number of movies with an Oscar. In our final model, all variables were significant and showed an F1 score of 0.72 (threshold = 0.6) which was significantly higher than our first model; none of our models performed well in terms of model deviance, as none showed a ratio near unity. Finally we, removed to regressor variables which reflected information not available at the time the Oscar was awarded, i.e., future information; in this model, the F1 score dropped to 0.52 (threshold = 0.6).</p>
 
 <h3>
 <a id="authors-and-contributors" class="anchor" href="#authors-and-contributors" aria-hidden="true"><span class="octicon octicon-link"></span></a>Authors and Contributors</h3>
 
 <p>This project was authored by: Leslie Tanner (<a href="https://github.com/lat7dg" class="user-mention">@lat7dg</a>), Matthew Hawthorn (<a href="https://github.com/MattHawthorn" class="user-mention">@MattHawthorn</a>), Michael Lenart (<a href="https://github.com/mdlenart" class="user-mention">@mdlenart</a>) and Nikhil Mascarenhas (<a href="https://github.com/nm1291" class="user-mention">@nm1291</a>)</p>
-        </section>
-
-        <footer>
-          OscarPredictor is maintained by <a href="https://github.com/nm1291">nm1291</a><br>
-          This page was generated by <a href="https://pages.github.com">GitHub Pages</a>. Tactile theme by <a href="https://twitter.com/jasonlong">Jason Long</a>.
-        </footer>
-
-        
+        </article>
       </div>
     </div>
-  </body>
+    <footer>
+      <div class="owner">
+      <p><a href="https://github.com/nm1291" class="avatar"><img src="https://avatars0.githubusercontent.com/u/1998614?v=3&amp;s=60" width="48" height="48"></a> <a href="https://github.com/nm1291">nm1291</a> maintains <a href="https://github.com/nm1291/OscarPredictor">OscarPredictor</a></p>
+
+
+      </div>
+      <div class="creds">
+        <small>This page generated using <a href="https://pages.github.com/">GitHub Pages</a><br>theme by <a href="https://twitter.com/jonrohan/">Jon Rohan</a></small>
+      </div>
+    </footer>
+  </div>
+  <div class="current-section">
+    <a href="#top">Scroll to top</a>
+    <a href="https://github.com/nm1291/OscarPredictor/tarball/master" class="tar">tar</a><a href="https://github.com/nm1291/OscarPredictor/zipball/master" class="zip">zip</a><a href="" class="code">source code</a>
+    <p class="name"></p>
+  </div>
+
+            <script type="text/javascript">
+            var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+            document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+          </script>
+          <script type="text/javascript">
+            try {
+              var pageTracker = _gat._getTracker("UA-71154209-1");
+            pageTracker._trackPageview();
+            } catch(err) {}
+          </script>
+
+</body>
 </html>
