@@ -1,193 +1,193 @@
-[1] "Oscar Category: LeadActor"
-      Movie Title   Oscar Prediction
+﻿[1] "Oscar Category: LeadActor"
+      Movie Title  Oscar Prediction
 1     The Martian  0.444416166954881
 2 The Danish Girl  0.382538275587879
 3      Steve Jobs  0.297629232655551
 4    The Revenant  0.254728972182146
-5          Trumbo 0.0898647481319236
+5          Trumbo  0.0898647481319236
 
 [1] "Oscar Category: SupportActor"
       Movie Title  Oscar Prediction
-1 Bridge of Spies 0.601293914047802
-2       Spotlight 0.502461792641986
-3   The Big Short 0.344695809365179
-4    The Revenant 0.254728972182146
-5           Creed 0.122992723800072
+1 Bridge of Spies  0.601293914047802
+2       Spotlight  0.502461792641986
+3   The Big Short  0.344695809365179
+4    The Revenant  0.254728972182146
+5           Creed  0.122992723800072
 
 [1] "Oscar Category: LeadActress"
-  Movie Title   Oscar Prediction
+  Movie Title  Oscar Prediction
 1       Carol  0.155760170990261
-2    Brooklyn 0.0863357319081301
-3         Joy 0.0536671767810548
-4        Room 0.0401682576130145
+2    Brooklyn  0.0863357319081301
+3         Joy  0.0536671767810548
+4        Room  0.0401682576130145
 5    45 Years  0.033352632819798
 
 [1] "Oscar Category: SupportActress"
         Movie Title  Oscar Prediction
-1 The Hateful Eight 0.643914586745213
-2         Spotlight 0.502461792641986
-3   The Danish Girl 0.382538275587879
-4        Steve Jobs 0.297629232655551
-5             Carol 0.155760170990261
+1 The Hateful Eight  0.643914586745213
+2         Spotlight  0.502461792641986
+3   The Danish Girl  0.382538275587879
+4        Steve Jobs  0.297629232655551
+5             Carol  0.155760170990261
 
 [1] "Oscar Category: Animated"
-            Movie Title    Oscar Prediction
-1            Inside Out   0.135506645753461
-2      Omoide no Mânî  0.0176836698056758
-3 Shaun the Sheep Movie   0.010717506301579
-4             Anomalisa 0.00859082236863447
-5       Boy & the World 0.00590036064692045
+            Movie Title  Oscar Prediction
+1            Inside Out  0.135506645753461
+2        Omoide no Mânî  0.0176836698056758
+3 Shaun the Sheep Movie  0.010717506301579
+4             Anomalisa  0.00859082236863447
+5       Boy & the World  0.00590036064692045
 
 [1] "Oscar Category: BestPicture"
-         Movie Title   Oscar Prediction
+         Movie Title  Oscar Prediction
 1 Mad Max: Fury Road  0.638781699646019
 2    Bridge of Spies  0.601293914047802
 3          Spotlight  0.502461792641986
 4        The Martian  0.444416166954881
 5      The Big Short  0.344695809365179
 6       The Revenant  0.254728972182146
-7           Brooklyn 0.0863357319081301
-8               Room 0.0401682576130145
+7           Brooklyn  0.0863357319081301
+8               Room  0.0401682576130145
 
 [1] "Oscar Category: Cinematography"
          Movie Title  Oscar Prediction
-1  The Hateful Eight 0.643914586745213
-2 Mad Max: Fury Road 0.638781699646019
-3       The Revenant 0.254728972182146
-4            Sicario 0.171388105093865
-5              Carol 0.155760170990261
+1  The Hateful Eight  0.643914586745213
+2 Mad Max: Fury Road  0.638781699646019
+3       The Revenant  0.254728972182146
+4            Sicario  0.171388105093865
+5              Carol  0.155760170990261
 
 [1] "Oscar Category: Costume"
          Movie Title  Oscar Prediction
-1 Mad Max: Fury Road 0.638781699646019
-2    The Danish Girl 0.382538275587879
-3       The Revenant 0.254728972182146
-4              Carol 0.155760170990261
-5         Cinderella 0.121032580186595
+1 Mad Max: Fury Road  0.638781699646019
+2    The Danish Girl  0.382538275587879
+3       The Revenant  0.254728972182146
+4              Carol  0.155760170990261
+5         Cinderella  0.121032580186595
 
 [1] "Oscar Category: Director"
-         Movie Title   Oscar Prediction
+         Movie Title  Oscar Prediction
 1 Mad Max: Fury Road  0.638781699646019
 2          Spotlight  0.502461792641986
 3      The Big Short  0.344695809365179
 4       The Revenant  0.254728972182146
-5               Room 0.0401682576130145
+5               Room  0.0401682576130145
 
 [1] "Oscar Category: Editing"
                                  Movie Title  Oscar Prediction
-1 Star Wars: Episode VII - The Force Awakens 0.665036763264889
-2                         Mad Max: Fury Road 0.638781699646019
-3                                  Spotlight 0.502461792641986
-4                              The Big Short 0.344695809365179
-5                               The Revenant 0.254728972182146
+1 Star Wars: Episode VII - The Force Awakens  0.665036763264889
+2                         Mad Max: Fury Road  0.638781699646019
+3                                  Spotlight  0.502461792641986
+4                              The Big Short  0.344695809365179
+5                               The Revenant  0.254728972182146
 
 [1] "Oscar Category: Foreign"
-             Movie Title    Oscar Prediction
+             Movie Title  Oscar Prediction
 1               Saul fia  0.0391661433069961
 2 Embrace of the Serpent  0.0126225865271366
-3                 Krigen 0.00643944472780115
-4                Mustang 0.00605992991632975
-5                  Theeb 0.00529545090337442
+3                 Krigen  0.00643944472780115
+4                Mustang  0.00605992991632975
+5                  Theeb  0.00529545090337442
 
 [1] "Oscar Category: MakeupHair"
-                                                      Movie Title   Oscar Prediction
+                                                      Movie Title  Oscar Prediction
 1                                              Mad Max: Fury Road  0.638781699646019
 2                                                    The Revenant  0.254728972182146
-3 The 100-Year-Old Man Who Climbed Out the Window and Disappeared 0.0143505607405238
+3 The 100-Year-Old Man Who Climbed Out the Window and Disappeared  0.0143505607405238
 
 [1] "Oscar Category: ProductionDesign"
          Movie Title  Oscar Prediction
-1 Mad Max: Fury Road 0.638781699646019
-2    Bridge of Spies 0.601293914047802
-3        The Martian 0.444416166954881
-4    The Danish Girl 0.382538275587879
-5       The Revenant 0.254728972182146
+1 Mad Max: Fury Road  0.638781699646019
+2    Bridge of Spies  0.601293914047802
+3        The Martian  0.444416166954881
+4    The Danish Girl  0.382538275587879
+5       The Revenant  0.254728972182146
 
 [1] "Oscar Category: SoundEditing"
                                  Movie Title  Oscar Prediction
-1 Star Wars: Episode VII - The Force Awakens 0.665036763264889
-2                         Mad Max: Fury Road 0.638781699646019
-3                                The Martian 0.444416166954881
-4                               The Revenant 0.254728972182146
-5                                    Sicario 0.171388105093865
+1 Star Wars: Episode VII - The Force Awakens  0.665036763264889
+2                         Mad Max: Fury Road  0.638781699646019
+3                                The Martian  0.444416166954881
+4                               The Revenant  0.254728972182146
+5                                    Sicario  0.171388105093865
 
 [1] "Oscar Category: SoundMixing"
                                  Movie Title  Oscar Prediction
-1 Star Wars: Episode VII - The Force Awakens 0.665036763264889
-2                         Mad Max: Fury Road 0.638781699646019
-3                            Bridge of Spies 0.601293914047802
-4                                The Martian 0.444416166954881
-5                               The Revenant 0.254728972182146
+1 Star Wars: Episode VII - The Force Awakens  0.665036763264889
+2                         Mad Max: Fury Road  0.638781699646019
+3                            Bridge of Spies  0.601293914047802
+4                                The Martian  0.444416166954881
+5                               The Revenant  0.254728972182146
 
 [1] "Oscar Category: VisualEffects"
                                  Movie Title  Oscar Prediction
-1 Star Wars: Episode VII - The Force Awakens 0.665036763264889
-2                         Mad Max: Fury Road 0.638781699646019
-3                                The Martian 0.444416166954881
-4                               The Revenant 0.254728972182146
+1 Star Wars: Episode VII - The Force Awakens  0.665036763264889
+2                         Mad Max: Fury Road  0.638781699646019
+3                                The Martian  0.444416166954881
+4                               The Revenant  0.254728972182146
 5                                 Ex Machina  0.14043562598233
 
 [1] "Oscar Category: Music"
                                  Movie Title  Oscar Prediction
-1 Star Wars: Episode VII - The Force Awakens 0.665036763264889
-2                          The Hateful Eight 0.643914586745213
-3                            Bridge of Spies 0.601293914047802
-4                                    Sicario 0.171388105093865
-5                                      Carol 0.155760170990261
+1 Star Wars: Episode VII - The Force Awakens  0.665036763264889
+2                          The Hateful Eight  0.643914586745213
+3                            Bridge of Spies  0.601293914047802
+4                                    Sicario  0.171388105093865
+5                                      Carol  0.155760170990261
 
 [1] "Oscar Category: Screenplay"
              Movie Title  Oscar Prediction
-1 Straight Outta Compton 0.759331476306919
-2        Bridge of Spies 0.601293914047802
-3              Spotlight 0.502461792641986
+1 Straight Outta Compton  0.759331476306919
+2        Bridge of Spies  0.601293914047802
+3              Spotlight  0.502461792641986
 4             Ex Machina  0.14043562598233
-5             Inside Out 0.135506645753461
+5             Inside Out  0.135506645753461
 
 [1] "Oscar Category: DocShort"
-                                    Movie Title     Oscar Prediction
+                                    Movie Title  Oscar Prediction
 1                        Chau, beyond the lines  0.00183571446048652
-2        Claude Lanzmann: Spectres of the Shoah 0.000445639674683942
-3 A Girl in the River: The Price of Forgiveness 0.000431437846744992
-4                           Last Day of Freedom 0.000331108445632595
-5                                  Body Team 12 0.000176576298376595
+2        Claude Lanzmann: Spectres of the Shoah  0.000445639674683942
+3 A Girl in the River: The Price of Forgiveness  0.000431437846744992
+4                           Last Day of Freedom  0.000331108445632595
+5                                  Body Team 12  0.000176576298376595
 
 [1] "Oscar Category: Documentary"
-                                  Movie Title    Oscar Prediction
-1                                         Amy   0.418913721634032
-2                 What Happened, Miss Simone?   0.021083442452708
+                                  Movie Title  Oscar Prediction
+1                                         Amy  0.418913721634032
+2                 What Happened, Miss Simone?  0.021083442452708
 3                         The Look of Silence  0.0116621696062241
 4                                 Cartel Land  0.0062712417264887
-5 Winter on Fire: Ukraine's Fight for Freedom 0.00390330754601358
+5 Winter on Fire: Ukraine's Fight for Freedom  0.00390330754601358
 
 [1] "Oscar Category: ShortAnimated"
-                    Movie Title     Oscar Prediction
-1             World of Tomorrow 0.000231318025401186
-2 Mi ne mozhem zhit bez kosmosa 0.000201425862700469
-3            Historia de un oso 0.000173497620099917
-4           Sanjay's Super Team 0.000159555383285701
-5                      Prologue 0.000142352644459505
+                    Movie Title  Oscar Prediction
+1             World of Tomorrow  0.000231318025401186
+2 Mi ne mozhem zhit bez kosmosa  0.000201425862700469
+3            Historia de un oso  0.000173497620099917
+4           Sanjay's Super Team  0.000159555383285701
+5                      Prologue  0.000142352644459505
 
 [1] "Oscar Category: ShortLive"
-     Movie Title     Oscar Prediction
-1           Shok 0.000754649081079762
-2 Alles wird gut 0.000341533394488304
-3        Day One 0.000262653004489532
-4      Ave Maria 0.000190192037683317
-5      Stutterer 0.000177888394764926
+     Movie Title  Oscar Prediction
+1           Shok  0.000754649081079762
+2 Alles wird gut  0.000341533394488304
+3        Day One  0.000262653004489532
+4      Ave Maria  0.000190192037683317
+5      Stutterer  0.000177888394764926
 
 [1] "Oscar Category: Song"
-           Movie Title    Oscar Prediction
-1              Spectre   0.509682973824972
-2 Fifty Shades of Grey   0.284181348048594
+           Movie Title  Oscar Prediction
+1              Spectre  0.509682973824972
+2 Fifty Shades of Grey  0.284181348048594
 3                Youth  0.0406441962598222
-4   The Hunting Ground 0.00489558446711932
-5    Racing Extinction 0.00242331995054673
+4   The Hunting Ground  0.00489558446711932
+5    Racing Extinction  0.00242331995054673
 
 [1] "Oscar Category: Adaptation"
-    Movie Title   Oscar Prediction
+    Movie Title  Oscar Prediction
 1   The Martian  0.444416166954881
 2 The Big Short  0.344695809365179
 3         Carol  0.155760170990261
-4      Brooklyn 0.0863357319081301
-5          Room 0.0401682576130145
+4      Brooklyn  0.0863357319081301
+5          Room  0.0401682576130145
 

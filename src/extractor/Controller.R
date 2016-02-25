@@ -1,10 +1,10 @@
 # Control File. Calls all other function and saves final result.
 # Before running set source and data directories:
-dataDir <- "~/Git/OscarPredictor/data/"
-sourceDir <- "~/Git/OscarPredictor/src/extractor/"
+dataDir <- "../../data/"
+sourceDir <- "../../src/extractor/"
 
 source(paste0(sourceDir,"ExtractMainPage.R"))
-source(paste0(sourceDir,"ExtractMovieDetails2.R"))
+source(paste0(sourceDir,"ExtractMovieDetails3.R"))
 source(paste0(sourceDir,"ExtractActorDetails.R"))
 
 
@@ -29,4 +29,7 @@ if(!file.exists(paste0(dataDir,"actorData.RData"))){
                                        startIndex = 1, 
                                        dataDir = dataDir, pause = .3)
     save(actorData, file=paste0(dataDir,"actorData.RData"))
+} else {
+    load(file=paste0(dataDir,"actorData.RData"))
 }
+
