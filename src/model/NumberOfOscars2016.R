@@ -28,6 +28,25 @@ F1Score <- function(train.data,test.data, regressors, response, threshold=0.5){
   return(F1)
 }
 
+F1Leslie <- function(trainData, testData, regressors, response, threshold=0.5) {
+  fmodel <- as.formula(paste0(response," ~ `",paste0(regressors, collapse = "` + `"),'`'))
+  f <- glm(fmodel,data=trainData,family="binomial")
+  preds <- predict(f,newdata=testData,type="response")
+  preds <- ifelse(preds > threshold, 1, 0)
+  actual <- testData[, response]
+  TP <- sum(preds == 1 & actual == 1)
+  TN <- sum(preds == 0 & actual == 0)
+  FP <- sum(preds == 1 & actual == 0)
+  FN <- sum(preds == 0 & actual == 1)
+  prec <- TP/(TP + FP)
+  rec <- TP/(TP + FN)
+  F1 <- 2*((prec*rec)/(prec+rec))
+  return(F1)
+}
+
+
+
+
 #####
 movieDFClean$WonOscar <- ifelse(movieDFClean$NumberOfOscars>0,1,0)
 
@@ -245,6 +264,10 @@ winners2012 <- c("Lincoln", "Les Misérables", "Django Unchained", "Zero Dark Th
 # which(testData$MovieTitle == winners2012[1])
 
 testData[c(1,3,4,5,7,8,13,17,19,27,33,49), c("MovieTitle", "predictions")]
+
+
+## Logistic Regression figure
+plot(predictions)
 
 
 
@@ -478,8 +501,8 @@ n <- names(df[,4:27])
 
 # df$MovieTitle[which((df$LeadActor) == 1)]
 
-file1 <- paste0(dataDir, "2016CategoryPreds.txt")
-sink(file = file1, append = FALSE)
+#file1 <- paste0(dataDir, "2016CategoryPreds.txt")
+#sink(file = file1, append = FALSE)
   for (i in 1:length(n)) {
     print(paste("Oscar Category:", n[i]))
     a <- df$MovieTitle[which(df[ , n[i]] == 1)]
@@ -489,5 +512,5 @@ sink(file = file1, append = FALSE)
     print(df2)
     cat("\n")
   }
-sink()
+#sink()
 
